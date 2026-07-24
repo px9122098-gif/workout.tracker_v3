@@ -1,0 +1,248 @@
+.auth-view {
+    min-height: calc(100svh - 100px);
+    padding: clamp(24px, 5vw, 64px) 0;
+    box-sizing: border-box;
+
+    display: grid;
+    place-items: center;
+}
+
+.auth-container {
+    position: relative;
+
+    width: min(92vw, 960px);
+    aspect-ratio: 16 / 10;
+    min-height: 500px;
+
+    overflow: hidden;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 18px 50px rgba(20, 30, 25, 0.14);
+}
+
+@media (max-height: 800px) and (min-width: 721px) {
+    .auth-view {
+        padding: 20px 0;
+    }
+
+    .auth-container {
+        width: min(87vw, 820px);
+    }
+}
+
+.form-container {
+    position: absolute;
+    top: 0;
+
+    width: 50%;
+    height: 100%;
+    padding: clamp(24px, 4vw, 56px);
+    box-sizing: border-box;
+
+    display: grid;
+    place-items: center;
+}
+
+.form-container form {
+    width: min(100%, 320px);
+
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.login-container,
+.register-container {
+    left: 0;
+}
+
+.overlay-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.overlay {
+    position: relative;
+    left: -100%;
+
+    width: 200%;
+    height: 100%;
+
+    color: #ffffff;
+    background: linear-gradient(135deg, #159947, #087f72);
+}
+
+.overlay-panel {
+    position: absolute;
+    top: 0;
+
+    width: 50%;
+    height: 100%;
+    padding: clamp(24px, 4vw, 56px);
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+}
+
+.overlay-left {
+    left: 0;
+}
+
+.overlay-right {
+    right: 0;
+}
+
+.overlay-panel p {
+    max-width: 300px;
+    line-height: 1.6;
+    margin: 0 0 24px;
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.overlay-panel button {
+    color: #ffffff;
+    background-color: transparent;
+    border: 1px solid currentColor;
+
+    padding: 11px 24px;
+    font-weight: 700;
+}
+
+.form-container {
+    transition:
+        transform 600ms ease-in-out,
+        opacity 400ms ease-in-out;
+}
+
+.login-container {
+    z-index: 2;
+}
+
+.register-container {
+    z-index: 1;
+    opacity: 0;
+}
+
+.auth-container.register-mode .login-container {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.auth-container.register-mode .register-container {
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 3;
+}
+
+.overlay-container {
+    z-index: 10;
+    transition: transform 600ms ease-in-out;
+}
+
+.overlay {
+    transform: translateX(0);
+    transition: transform 600ms ease-in-out;
+}
+
+.auth-container.register-mode .overlay-container {
+    transform: translateX(-100%);
+}
+
+.auth-container.register-mode .overlay {
+    transform: translateX(50%);
+}
+
+.overlay-panel {
+    transition: transform 600ms ease-in-out;
+}
+
+.overlay-left {
+    transform: translateX(-18%);
+}
+
+.overlay-right {
+    transform: translateX(0);
+}
+
+.auth-container.register-mode .overlay-left {
+    transform: translateX(0);
+}
+ 
+.auth-container.register-mode .overlay-right {
+    transform: translateX(18%);
+}
+
+.auth-view input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    background-color: #f1f5f2;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #17211c;
+    font: inherit;
+    transition:
+        border-color 180ms ease,
+        transform 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.auth-view input:focus {
+    outline: none;
+    background-color: #ffffff;
+    border-color: #159947;
+    box-shadow: 0 0 0 3px rgba(21, 153, 71, 0.16);
+}
+
+.auth-view input::placeholder {
+    color: #7d8982;
+}
+
+.form-container button[type="submit"] {
+    width: 150px;
+    align-self: center;
+    padding: 12px 22px;
+    background-color: #159947;
+    color: white;
+    font-weight: 700;
+    border-radius: 6px;
+    transition:
+        border-color 180ms ease,
+        transform 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.form-container button[type="submit"]:hover {
+    background-color: #087f72;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(8, 127, 114, 0.22);
+}
+
+.form-container button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.form-container h2,
+.overlay-panel h2 {
+    margin: 0 0 12px;
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+.form-container h2 {
+    color: #17211c;
+}
+
+.overlay-panel h2 {
+    color: #ffffff;
+}

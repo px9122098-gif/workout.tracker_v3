@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout tracker</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/workouts.css">
+    <link rel="stylesheet" href="css/progress.css">
+</head>
+<body>
+    <div class="app">
+        <section id="authView" class="auth-view" hidden>
+            <div class="auth-container" id="authCard">
+
+                <div class="form-container register-container">
+                    <form id="registerForm">
+                        <h2>Create Account</h2>
+                        <input id="registerEmailInput" type="email" placeholder="Email">
+                        <input id="registerPasswordInput" type="password" placeholder="Password">
+                        <button type="submit">Sign Up</button>
+                    </form>
+                </div>
+
+                <div class="form-container login-container">
+                    <form id="loginForm">
+                        <h2>Sign In</h2>
+                        <input id="loginEmailInput" type="email" placeholder="Email">
+                        <input id="loginPasswordInput" type="password" placeholder="Password">
+                        <button type="submit">Sign In</button>
+                    </form>
+                </div>
+
+                <div class="overlay-container">
+                    <div class="overlay">
+
+                        <div class="overlay-panel overlay-left">
+                            <h2>Welcome Back</h2>
+                            <p>Sign in to continue tracking your progress.</p>
+                            <button type="button" id="showLoginBtn">Sign In</button>
+                        </div>
+
+                        <div class="overlay-panel overlay-right">
+                            <h2>Hello, Friend</h2>
+                            <p>Create an account and start building your workout history.</p>
+                            <button type="button" id="showRegisterBtn">Sign Up</button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="dashboardView" hidden>
+            <header class="app-header">
+                <div class="brand">
+                    <span class="brand-icon" aria-hidden="true">WT</span>
+                    <h1 class="app-title">Workout Tracker</h1>
+                </div>
+
+                <nav class="app-nav">
+                    <button type="button" class="nav-link active" data-page="dashboardPage">Dashboard</button>
+                    <button type="button" class="nav-link" data-page="workoutsPage">Workouts</button>
+                    <button type="button" class="nav-link" data-page="progressPage">Progress</button>
+                </nav>
+
+                <div class="user-menu">
+                    <span class="user-avatar">A</span>
+                    <span class="user-email">alex@example.com</span>
+                    <button type="button" id="logoutBtn" class="logout-btn" aria-label="Log out">Exit</button>
+                </div>
+            </header>
+            <main id="dashboardPage" class="app-page dashboard-page">
+                <section class="hero-panel">
+                    <div class="hero-content">
+                        <h2>Ready for your next workout?</h2>
+                        <p>Build momentum, one set at a time.</p>
+                        <button type="button" class="hero-action js-open-workouts" data-page="workoutsPage">+ Start workout</button>
+                    </div>
+                </section>
+                <div class="dashboard-grid">
+                    <section class="weekly-card dashboard-card">
+                        <div class="card-header">
+                            <h2>This week</h2>
+                            <span>This week</span>
+                        </div>
+
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <strong>4</strong>
+                                <span>Workouts completed</span>
+                            </div>
+                            <div class="stat-item">
+                                <strong>
+                                    18,420 <small>kg</small>
+                                </strong>
+                                <span>Total volume</span>
+                            </div>
+                            <div class="stat-item">
+                                <strong>6</strong>
+                                <span>Day streak</span>
+                            </div>
+                        </div>
+                        <div class="weekly-chart">
+                            <div class="chart-line"></div>
+                        </div>
+                    </section>
+                    <section class="recent-card dashboard-card">
+                        <div class="card-header">
+                            <h2>Recent workouts</h2>
+                            <button type="button">View all</button>
+                        </div>
+                        <div class="recent-list">
+                            <div class="recent-workout-row">
+                                <div class="recent-workout-icon">P</div>
+                                <div class="recent-workout-info">            
+                                    <strong>Push day</strong>
+                                    <span>13.07.2026</span>
+                                </div>
+                                <span class="recent-workout-arrow" aria-hidden="true"></span>
+                            </div>
+                            <div class="recent-workout-row">
+                                <div class="recent-workout-icon">P</div>
+                                <div class="recent-workout-info">
+                                    <strong>Pull day</strong>
+                                    <span>11.07.2026</span>
+                                </div>
+                                <span class="recent-workout-arrow" aria-hidden="true"></span>
+                            </div>
+                            <div class="recent-workout-row">
+                                <div class="recent-workout-icon">L</div>
+                                <div class="recent-workout-info">
+                                    <strong>Legs day</strong>
+                                    <span>09.07.2026</span>
+                                </div>
+                                <span class="recent-workout-arrow" aria-hidden="true"></span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="dashboard-lower-grid">
+                    <section class="goal-card dashboard-card">
+                        <div class="goal-ring" aria-label="4 of 5 workouts">
+                            <strong>4</strong>
+                            <span>of 5</span>
+                        </div>
+
+                        <div class="goal-content">
+                            <h2>5 Workouts This Week</h2>
+                            <p>You're almost there! One more workout to hit your goal.</p>
+                            <button type="button" class="text-action">View goals</button>
+                        </div>
+                    </section>
+
+                    <section class="personal-best-card dashboard-card">
+                        <div class="record-icon" aria-hidden="true">PB</div>
+
+                        <div class="record-content">
+                            <h2>Bench Press</h2>
+                            <div class="record-value">
+                                <strong>100</strong>
+                                <span>kg</span>
+                            </div>
+                            <p>Achieved on Jul 6, 2026</p>
+                        </div>
+                    </section>
+
+                    <div class="quick-action-area dashboard-card">
+                        <button type="button" class="dashboard-new-workout-btn js-open-workouts" data-page="workoutsPage">+ New workout</button>
+                    </div>
+                </div>
+            </main>
+            <main id="workoutsPage" class="app-page workouts-page" hidden>
+                <div class="page-heading">
+                    <div>
+                        <h2>Workouts</h2>
+                        <p>Your complete training history</p>
+                    </div>
+
+                    <button type="button" id="openCreateWorkoutBtn" class="new-workout-btn" aria-controls="createWorkoutPanel" aria-expanded="false">+ New workout</button>
+                </div>
+                <section class="workouts-summary">
+                    <div class="summary-main">
+                        <div class="summary-total">
+                            <strong id="monthWorkoutCount">0</strong>
+                            <span>workouts this month</span>
+                        </div>
+                        <p>You're building a strong routine.</p>
+                    </div>
+
+                    <div class="summary-metrics">
+                        <div>
+                            <strong id="monthExerciseCount">0</strong>
+                            <span>exercises</span>
+                        </div>
+                        <div>
+                            <strong id="monthSetCount">0</strong>
+                            <span>sets</span>
+                        </div>
+                        <div>
+                            <strong id="monthVolume">
+                                0 <small>kg</small>
+                            </strong>
+                            <span>volume</span>
+                        </div>
+                    </div>
+                </section>
+                <section class="workouts-toolbar dashboard-card">
+                    <input class="workout-search" placeholder="Search workouts">
+                    
+                    <div class="workout-filters"></div>
+
+                    <select class="workout-sort">
+                        <option>Newest first</option>
+                        <option>Oldest first</option>
+                    </select>
+                </section>
+                <section id="createWorkoutPanel" class="create-workout-panel" hidden>
+                <h2>Create Workout</h2>
+                <form id="createWorkoutForm" class="create-workout-form">
+                    <input id="workoutNameInput" placeholder="Workout name">
+                    <button type="submit" id="createWorkoutBtn">Create</button>
+                    <button type="button" id="cancelCreateWorkoutBtn">Cancel</button>
+                </form>
+                </section>
+                <div class="workouts-main-grid">
+                    <section class="workout-history dashboard-card">
+                        <h2 id="workoutsMonthTitle">July 2026</h2>
+                        <div class="workouts-list" id="workoutsList"></div>
+                    </section>
+
+                    <aside class="workouts-sidebar">
+                        <section class="month-activity dashboard-card">
+                            <div class="analytics-heading">
+                                <h2 id="activityMonthTitle">Month activity</h2>
+                            </div>
+
+                            <div class="activity-weekdays">
+                                <span>Mon</span><span>Tue</span><span>Wed</span>
+                                <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                            </div>
+
+                            <div id="activityGrid" class="activity-grid"></div>
+
+                            <div class="activity-legend">
+                                <span>Light</span>
+                                <i class="level-1"></i>
+                                <i class="level-2"></i>
+                                <i class="level-3"></i>
+                                <i class="level-4"></i>
+                                <span>Very hard</span>
+                            </div>
+                        </section>
+
+                        <section class="monthly-summary dashboard-card">
+                            <h2>Monthly summary</h2>
+
+                            <div id="monthlySummaryList" class="monthly-summary-list"></div>
+                        </section>
+                    </aside>
+                </div>
+
+                <section class="workout-details dashboard-card" id="workoutDetails" hidden></section>
+            </main>
+            <main id="progressPage" class="app-page progress-page" hidden>
+                <div class="progress-heading-row">
+                    <div class="page-heading">
+                        <h2>Progress</h2>
+                        <p>See how your training develops over time.</p>
+                    </div>
+
+                    <div class="progress-periods" aria-label="Progress period">
+                        <button type="button" class="progress-period-button" data-months="3">
+                            3 months
+                        </button>
+                        <button type="button" class="progress-period-button is-active" data-months="6"> 
+                            6 months
+                        </button>
+                        <button type="button" class="progress-period-button" data-months="12">
+                            1 year
+                        </button>
+                    </div>
+                </div>
+
+                <p id="progressStatus" class="progress-status" aria-live="polite"></p>
+
+                <section class="progress-hero">
+                    <div>
+                        <h2 id="progressTrendTitle">Your progress starts here</h2>
+                        <p id="progressTrendDescription">Complete workouts to build your trend.</p>
+                    </div>
+
+                    <strong id="progressTrendValue">-</strong>
+                </section>
+
+                <section class="weekly-volume-card dashboard-card">
+                    <div class="progress-card-heading">
+                        <div>
+                            <h2>Weekly volume</h2>
+                            <strong id="progressTotalVolume">0 kg</strong>
+                        </div>
+                    </div>
+
+                    <div id="weeklyVolumeChart" class="weekly-volume-chart"></div>
+                </section>
+
+            </main>
+        </section>
+    </div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
+
+

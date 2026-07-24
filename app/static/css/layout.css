@@ -1,0 +1,99 @@
+.app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.dashboard-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 20px;
+}
+
+.hero-panel {
+    min-height: 260px;
+    padding: 44px 56px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #09914b, #087f72 52%, #8bd11f);
+    box-shadow: 0 14px 34px rgba(9, 145, 75, 0.18);
+    display: flex;
+    align-items: center;
+}
+
+.hero-content {
+    max-width: 520px;
+}
+
+.hero-content h2 {
+    margin: 0 0 16px;
+    font-size: 34px;
+    line-height: 1.15;
+}
+
+.hero-content p {
+    margin: 0 0 28px;
+    font-size: 18px;
+}
+
+.hero-action {
+    padding: 14px 22px;
+    background: #ffffff;
+    color: #159947;
+    font-weight: 800;
+}
+
+.panel {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.panel-2 {
+    display: flex;
+    background-color: white;
+    padding: 20px;
+    gap: 20px;
+    border-radius: 12px;
+    flex: 2;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid,
+    .dashboard-lower-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .goal-card,
+    .personal-best-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .quick-action-area {
+        justify-content: stretch;
+    }
+
+    .new-workout-btn {
+        max-width: none;
+    }
+}
+
+.app-page {
+    margin-top: 20px;
+}
+
+.app-page[hidden] {
+    display: none !important;
+}
+
