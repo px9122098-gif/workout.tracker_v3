@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 workout.db
 *.log
+.pytest_cache/
