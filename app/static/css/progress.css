@@ -166,6 +166,54 @@
     }
 }
 
+.strength-progress-card {
+    padding: 22px 28px;
+}
+
+.strength-progress-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.strength-progress-heading h2 {
+    margin: 0 0 12px;
+}
+
+#strengthExerciseSelect {
+    min-width: 220px;
+    min-height: 40px;
+    padding: 0 12px;
+}
+
+.strength-current {
+    display: grid;
+    justify-items: end;
+    gap: 4px;
+}
+
+#strengthCurrentValue {
+    font-size: 38px;
+}
+
+#strengthChange.is-positive {
+    color: #159947;
+}
+
+#strengthChange.is-negative {
+    color: #dc3f36;
+}
+
+.strength-chart {
+    min-height: 180px;
+    margin-top: 20px;
+}
+
+.strength-point {
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e9e7;
+}
 
 
 

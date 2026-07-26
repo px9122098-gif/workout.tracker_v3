@@ -188,6 +188,21 @@ export function getProgressOverview(months = 6) {
     );
 }
 
+export function getProgressExercises() {
+    return authFetch(`${API_URL}/progress/exercises`);
+}
+
+export function getStrengthProgress(exerciseName, months = 6) {
+    const params = new URLSearchParams({
+        exercise_name: exerciseName,
+        months: String(months),
+    });
+
+    return authFetch(
+        `${API_URL}/progress/strength?${params.toString()}`
+    );
+}
+
 export async function getWorkouts() {
     return authFetch(`${API_URL}/workouts`);
 }
