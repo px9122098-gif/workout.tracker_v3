@@ -335,33 +335,194 @@ function renderStrengthProgress(data) {
         );
     }
 
-    const pointsList = document.createElement("div");
-    pointsList.className = "strength-points-list";
+    renderStrengthChart(data.points);
+    strengthStatus.textContent = "";
+}
 
-    data.points.forEach(function (point) {
-        const row = document.createElement("div");
-        row.className = "strength-point";
+function renderStrengthChart(points) {
+    const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-        const date = new Date(`${point.date}T00:00:00`);
-        const formattedDate = date.toLocaleDateString(
-            "en-US",
-            {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-            },
-        );
+    const width = 720;
+    const height = 220;
+    const padding = 48;
 
-        row.textContent =
-            `${formattedDate} | ` +
-            `${Number(point.weight)} kg × ${point.reps} | ` +
-            `estimated ${Number(point.estimated_1rm)} kg`;
+    const plotWidth = width - padding * 2;
+    const plotHeight = height - padding * 2;
 
-        pointsList.appendChild(row);
+    const values = points.map(function (point) {
+        return Number(point.estimated_1rm);
     });
 
-    strengthChart.appendChild(pointsList);
-    strengthStatus.textContent = "";
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    const rawRange = maxValue - minValue;
+
+    const scalePadding = rawRange === 0
+        ? Math.max(maxValue * 0.05, 2.5)
+        : rawRange * 0.15;
+
+    const scaleMin = minValue - scalePadding;
+    const scaleMax = maxValue + scalePadding;
+    const scaleRange = scaleMax - scaleMin;
+
+    const coordinates = points.map(
+        function (point, index) {
+            const value = Number(
+                point.estimated_1rm
+            );
+
+            const x = points.length === 1
+                ? width / 2
+                : padding
+                    + index / (points.length - 1)
+                    * plotWidth;
+            
+            const y = padding
+                + (scaleMax - value)
+                / scaleRange
+                * plotHeight;
+            
+            return {
+                x: x,
+                y: y,
+                point: point,
+            };
+        },
+    );
+
+    const svg = document.createElementNS(
+        SVG_NAMESPACE,
+        "svg",
+    );
+
+    svg.setAttribute(
+        "viewBox",
+        `0 0 ${width} ${height}`,
+    );
+    svg.setAttribute(
+        "class",
+        "strength-chart-svg",
+    );
+
+    for (let index = 0; index <= 4; index += 1) {
+        const ratio = index / 4;
+        const y = padding + ratio * plotHeight;
+        const value = scaleMax - ratio * scaleRange;
+
+        const gridLine = document.createElementNS(
+            SVG_NAMESPACE,
+            "line",
+        );
+
+        gridLine.setAttribute("x1", String(padding));
+        gridLine.setAttribute("x2", String(width - padding));
+        gridLine.setAttribute("y1", String(y));
+        gridLine.setAttribute("y2", String(y));
+        gridLine.setAttribute("class", "strength-grid-line");
+
+        svg.appendChild(gridLine);
+
+        const axisLabel = document.createElementNS(
+            SVG_NAMESPACE,
+            "text",
+        );
+
+        axisLabel.setAttribute(
+            "x",
+            String(padding - 10),
+        );
+        axisLabel.setAttribute(
+            "y",
+            String(y + 4),
+        );
+        axisLabel.setAttribute(
+            "class",
+            "strength-axis-label",
+        );
+
+        axisLabel.textContent = `${value.toFixed(1)} kg`;
+
+        svg.appendChild(axisLabel);
+    }
+
+    const line = document.createElementNS(
+        SVG_NAMESPACE,
+        "polyline",
+    );
+
+    const pointsAttribute = coordinates
+        .map(function (coordinate) {
+            return `${coordinate.x},${coordinate.y}`;
+        })
+        .join(" ");
+
+    line.setAttribute("points", pointsAttribute);
+    line.setAttribute("class", "strength-line");
+
+    svg.appendChild(line);
+
+    coordinates.forEach(function (coordinate) {
+        const circle = document.createElementNS(
+            SVG_NAMESPACE,
+            "circle",
+        );
+
+        circle.setAttribute(
+            "cx",
+            String(coordinate.x),
+        );
+        circle.setAttribute(
+            "cy",
+            String(coordinate.y),
+        );
+        circle.setAttribute("r", "5");
+        circle.setAttribute(
+            "class",
+            "strength-dot",
+        );
+
+        const pointLabel = document.createElementNS(
+            SVG_NAMESPACE,
+            "text",
+        );
+
+        pointLabel.setAttribute(
+            "x",
+            String(coordinate.x),
+        );
+        pointLabel.setAttribute(
+            "y",
+            String(coordinate.y - 12),
+        );
+        pointLabel.setAttribute(
+            "class",
+            "strength-point-label",
+        );
+
+        pointLabel.textContent = Number(
+            coordinate.point.estimated_1rm
+        ).toLocaleString("en-US", {
+            maximumFractionDigits: 1,
+        });
+
+        svg.appendChild(pointLabel);
+
+        const title = document.createElementNS(
+            SVG_NAMESPACE,
+            "title",
+        );
+
+        title.textContent =
+            `${coordinate.point.date}: ` +
+            `${Number(
+                coordinate.point.estimated_1rm
+            )} kg estimated 1RM`;
+
+        circle.appendChild(title);
+        svg.appendChild(circle);
+    });
+
+    strengthChart.replaceChildren(svg);
 }
 
 

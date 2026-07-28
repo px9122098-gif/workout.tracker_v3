@@ -215,6 +215,44 @@
     border-bottom: 1px solid #e5e9e7;
 }
 
+.strength-chart-svg {
+    display: block;
+    width: 100%;
+    height: 220px;
+    overflow: visible;
+}
+
+.strength-line {
+    fill: none;
+    stroke: #159947;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.strength-grid-line {
+    stroke: #e5e9e7;
+    stroke-width: 1;
+}
+
+.strength-axis-label {
+    fill: #64748b;
+    font-size: 11px;
+    text-anchor: end;
+}
+
+.strength-point-label {
+    fill: #1f2933;
+    font-size: 11px;
+    text-anchor: middle;
+}
+
+.strength-dot {
+    fill: #fff;
+    stroke: #159947;
+    stroke-width: 3;
+    cursor: pointer;
+}
 
 
 
