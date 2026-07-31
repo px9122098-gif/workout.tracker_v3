@@ -240,3 +240,11 @@ class ProgressOverviewResponse(BaseModel):
     weekly_volume: list[WeeklyVolumeItem]
     consistency: ProgressConsistencyResponse
 
+
+class PersonalRecordItemResponse(BaseModel):
+    exercise_name: str
+    weight: Decimal
+    reps: int
+    estimated_1rm: Decimal
+    workout_date: date
+

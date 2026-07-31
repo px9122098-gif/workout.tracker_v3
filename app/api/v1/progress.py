@@ -3,7 +3,12 @@ from sqlalchemy.orm import Session
 
 from app.dependency import get_current_user, get_db
 from app.models import User
-from app.schemas import ProgressOverviewResponse, ExerciseProgressOptionResponse, StrengthProgressResponse
+from app.schemas import (
+    ExerciseProgressOptionResponse,
+    PersonalRecordItemResponse,
+    ProgressOverviewResponse,
+    StrengthProgressResponse,
+)
 from app.service import progress as progress_service
 
 
@@ -62,3 +67,18 @@ def get_strength_progress(
         months,
     )
 
+
+@router.get(
+    "/progress/personal-records",
+    response_model=list[PersonalRecordItemResponse],
+)
+def get_personal_records(
+    limit: int = Query(default=3, ge=1, le=20),
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    return progress_service.get_personal_records(
+        db,
+        current_user,
+        limit,
+    )

@@ -97,3 +97,31 @@ def get_completed_sets_for_exercise_period(
     )
 
 
+def get_completed_weighted_sets(db: Session, user_id: int):
+    return (
+        db.query(
+            Workout.date.label("workout_date"),
+            Exercise.name.label("exercise_name"),
+            WorkoutSet.weight.label("weight"),
+            WorkoutSet.reps.label("reps"),
+        )
+        .select_from(WorkoutSet)
+        .join(
+            Exercise,
+            WorkoutSet.exercise_id == Exercise.id,
+        )
+        .join(
+            Workout,
+            Exercise.workout_id == Workout.id,
+        )
+        .filter(
+            Workout.user_id == user_id,
+            Workout.completed_at.is_not(None),
+            WorkoutSet.weight > 0,
+        )
+        .order_by(
+            Workout.date.desc(),
+            WorkoutSet.id.desc(),
+        )
+        .all()
+    )

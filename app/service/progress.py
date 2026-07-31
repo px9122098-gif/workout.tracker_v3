@@ -8,12 +8,13 @@ from sqlalchemy.orm import Session
 from app.models import User, Workout
 from app.repository import progress as progress_repository
 from app.schemas import (
-    ProgressConsistencyDayResponse,
-    ProgressConsistencyResponse,
-    ProgressOverviewResponse,
     ExerciseProgressOptionResponse,
     StrengthProgressPointResponse,
     StrengthProgressResponse,
+    ProgressConsistencyDayResponse,
+    ProgressConsistencyResponse,
+    ProgressOverviewResponse,
+    PersonalRecordItemResponse,
 )
 
 
@@ -42,7 +43,11 @@ def calculate_workout_volume(workout: Workout) -> Decimal:
     return volume
 
 
-def get_progress_overview(db: Session, current_user: User, months: int) -> ProgressOverviewResponse:
+def get_progress_overview(
+    db: Session,
+    current_user: User,
+    months: int
+) -> ProgressOverviewResponse:
     now = datetime.now()
     current_month_start = datetime(now.year, now.month, 1)
 
@@ -160,7 +165,10 @@ def calculate_estimated_1rm(weight: Decimal, reps: int) -> Decimal:
     return result.quantize(Decimal("0.01"))
 
 
-def get_progress_exercise_options(db: Session, current_user: User) -> list[ExerciseProgressOptionResponse]:
+def get_progress_exercise_options(
+    db: Session,
+    current_user: User
+) -> list[ExerciseProgressOptionResponse]:
     names = progress_repository.get_progress_exercise_names(db, current_user.id)
 
     return [
@@ -345,7 +353,52 @@ def calculate_consistency(
     )
 
 
+def get_personal_records(
+    db: Session,
+    current_user: User,
+    limit: int
+) -> list[PersonalRecordItemResponse]:
+    rows = progress_repository.get_completed_weighted_sets(db, current_user.id)
 
+    best_by_exercise: dict[str, PersonalRecordItemResponse] = {}
+
+    for row in rows:
+        normalized_name = row.exercise_name.strip().lower()
+        estimated_1rm = calculate_estimated_1rm(row.weight, row.reps)
+    
+        candidate = PersonalRecordItemResponse(
+            exercise_name=row.exercise_name.strip().title(),
+            weight=row.weight,
+            reps=row.reps,
+            estimated_1rm=estimated_1rm,
+            workout_date=row.workout_date.date(),
+        )
+
+        current_best = best_by_exercise.get(normalized_name)
+
+        should_replace = (
+            current_best is None
+            or candidate.estimated_1rm > current_best.estimated_1rm
+            or (
+                candidate.estimated_1rm == current_best.estimated_1rm
+                and candidate.workout_date > current_best.workout_date
+            )
+        )
+
+        if should_replace:
+            best_by_exercise[normalized_name] = candidate
+
+    records = sorted(
+        best_by_exercise.values(),
+        key=lambda record: (
+            record.workout_date,
+            record.estimated_1rm,
+        ),
+        reverse=True,
+    )
+
+    return records[:limit]
+            
 
 
 

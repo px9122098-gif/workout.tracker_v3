@@ -535,4 +535,152 @@ def test_progress_consistency_groups_same_day_and_uses_highest_effort(db_session
     assert consistency["days"][0]["effort_level"] == "very_hard"
 
 
+def test_personal_records_returns_empty_list_without_sets():
+    token = create_user_and_get_token()
+
+    response = client.get(
+        "/api/v1/progress/personal-records",
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_personal_records_selects_best_set_for_exercise():
+    token = create_user_and_get_token()
+
+    workout_response = create_workout(token)
+    workout = workout_response.json()
+    workout_id = workout["id"]
+
+    exercise_response = create_exercise(token, workout_id, name="bench press")
+    exercise_id = exercise_response.json()["id"]
+
+    create_set(token, exercise_id, weight="80", reps=6)
+    create_set(token, exercise_id, weight="90", reps=3)
+    create_set(token, exercise_id, weight="85", reps=5)
+
+    completion_response = complete_workout(token, workout_id, "hard")
+    assert completion_response.status_code == 200
+
+    response = client.get(
+        "/api/v1/progress/personal-records",
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+
+    records = response.json()
+
+    assert len(records) == 1
+
+    record = records[0]
+
+    assert record["exercise_name"] == "Bench Press"
+    assert Decimal(record["weight"]) == Decimal("85")
+    assert record["reps"] == 5
+    assert Decimal(record["estimated_1rm"]) == Decimal("99.17")
+    assert record["workout_date"] == workout["date"][:10]
+
+
+def test_personal_records_exercises_normalizes_duplicate_names():
+    token = create_user_and_get_token()
+
+    workout_response = create_workout(token)
+    workout_id = workout_response.json()["id"]
+
+    exercise_response_1 = create_exercise(token, workout_id, name="bench press")
+    exercise_response_2 = create_exercise(token, workout_id, name=" Bench Press ")
+
+    exercise_id_1 = exercise_response_1.json()["id"]
+    exercise_id_2 = exercise_response_2.json()["id"]
+
+    create_set(token, exercise_id_1, weight="80", reps=6)
+    create_set(token, exercise_id_2, weight="90", reps=3)
+
+    client.post(
+        f"/api/v1/workouts/{workout_id}/complete",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"effort_level": "moderate"},
+    )
+
+    response = client.get(
+        "/api/v1/progress/personal-records",
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+    
+    records = response.json()
+    
+    assert len(records) == 1
+    assert records[0]["exercise_name"] == "Bench Press"
+
+
+def test_personal_records_does_not_return_another_users_data():
+    token_1 = create_user_and_get_token()
+    token_2 = create_user_and_get_token()
+
+    workout_response = create_workout(token_1)
+    workout_id = workout_response.json()["id"]
+
+    exercise_response = create_exercise(token_1, workout_id, name="bench press")
+    exercise_id = exercise_response.json()["id"]
+
+    create_set(token_1, exercise_id, weight="80", reps=6)
+
+    client.post(
+        f"/api/v1/workouts/{workout_id}/complete",
+        headers={"Authorization": f"Bearer {token_1}"},
+        json={"effort_level": "moderate"},
+    )
+
+    response_1 = client.get(
+        "/api/v1/progress/personal-records",
+        headers={"Authorization": f"Bearer {token_1}"},
+        params={
+            "exercise_name": "Bench Press",
+            "months": 6,
+        },
+    )
+
+    response_2 = client.get(
+        "/api/v1/progress/personal-records",
+        headers={"Authorization": f"Bearer {token_2}"},
+        params={
+            "exercise_name": "Bench Press",
+            "months": 6,
+        },
+    )
+
+    assert response_1.status_code == 200
+    assert response_2.status_code == 200
+
+    records_1 = response_1.json()
+    records_2 = response_2.json()
+
+    assert len(records_1) == 1
+    assert records_1[0]["exercise_name"] == "Bench Press"
+    assert records_2 == []
+
+
+def test_personal_records_requires_authentication():
+    response = client.get(
+        "/api/v1/progress/personal-records"
+    )
+
+    assert response.status_code == 401
+
+
+def test_personal_records_rejects_invalid_limit():
+    token = create_user_and_get_token()
+
+    response = client.get(
+        "/api/v1/progress/personal-records",
+        headers=auth_headers(token),
+        params={"limit": 0},
+    )
+
+    assert response.status_code == 422
 
