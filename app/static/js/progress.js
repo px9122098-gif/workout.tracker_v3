@@ -99,10 +99,20 @@ function renderProgressSummary(summary) {
     totalVolume.textContent = `${Math.round(volume).toLocaleString()} kg`;
 
     if (summary.volume_change_percent === null) {
-        trendTitle.textContent = "Your progress starts here";
-        trendValue.textContent = "-";
-        trendDescription.textContent = "Complete more workouts to compare training periods.";
+        if (volume > 0) {
+            trendTitle.textContent = "A new baseline is set";
+            trendValue.textContent = "New baseline";
+            trendDescription.textContent = "Keep training to compare your next period.";
+        } else {
+            trendTitle.textContent = "Your progress starts here";
+            trendValue.textContent = "-";
+            trendDescription.textContent = "Complete more workouts to compare training periods.";
+        }
 
+        trendValue.classList.toggle(
+            "is-baseline",
+            summary.volume_change_percent === null,
+        );
         return;
     }
 
@@ -207,7 +217,7 @@ function formatWeekRange(start, end) {
         day: "numeric",
     });
 
-    return `${formatter.format(start)}-${formatter.format(end)}`;
+    return formatter.formatRange(start, end);
 }
 
 function parseLocalDate(dateString) {

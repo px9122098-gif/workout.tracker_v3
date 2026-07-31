@@ -85,6 +85,11 @@
     line-height: 1;
 }
 
+#progressTrendValue.is-baseline {
+    font-size: 24px;
+    line-height: 1.2;
+}
+
 .weekly-volume-card {
     padding: 22px 28px;
 }
@@ -95,7 +100,7 @@
 }
 
 .weekly-volume-chart {
-    min-height: 220px;
+    min-height: 190px;
     margin-top: 20px;
     display: grid;
     grid-auto-flow: column;
@@ -107,7 +112,7 @@
 
 .weekly-volume-column {
     display: grid;
-    grid-template-rows: 24px 160px 32px;
+    grid-template-rows: 24px 130px 32px;
     align-items: end;
     text-align: center;
 }
@@ -118,7 +123,7 @@
 }
 
 .weekly-volume-track {
-    height: 160px;
+    height: 130px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -309,7 +314,7 @@
 
 .consistency-weekdays {
     display: grid;
-    grid-template-rows: repeat(7, 14px);
+    grid-template-rows: repeat(7, 16px);
     gap: 5px;
     color: #64748b;
     font-size: 9px;
@@ -317,17 +322,23 @@
 
 .consistency-grid {
     display: grid;
-    grid-template-rows: repeat(7, 14px);
+    grid-template-rows: repeat(7, 16px);
     grid-auto-flow: column;
-    grid-auto-columns: 14px;
+    grid-auto-columns: 16px;
     gap: 5px;
     overflow-x: auto;
     padding-bottom: 6px;
 }
 
+.weekly-volume-chart,
+.consistency-grid {
+    scrollbar-width: thin;
+    scrollbar-color: #aeb8b2 transparent;
+}
+
 .consistency-cell {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     border-radius: 3px;
     background: #edf0ee;
 }
