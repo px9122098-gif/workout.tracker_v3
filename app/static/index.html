@@ -331,16 +331,76 @@
                     ></div>
                 </section>
 
-                <section class="weekly-volume-card dashboard-card">
-                    <div class="progress-card-heading">
-                        <div>
-                            <h2>Weekly volume</h2>
-                            <strong id="progressTotalVolume">0 kg</strong>
+                <div class="progress-analytics-grid">
+                    <section class="weekly-volume-card dashboard-card">
+                        <div class="progress-card-heading">
+                            <div>
+                                <h2>Weekly volume</h2>
+                                <strong id="progressTotalVolume">0 kg</strong>
+                            </div>
                         </div>
-                    </div>
+                        
+                        <div id="weeklyVolumeChart" class="weekly-volume-chart"></div>
+                    </section>
 
-                    <div id="weeklyVolumeChart" class="weekly-volume-chart"></div>
-                </section>
+                    <section class="consistency-card dashboard-card">
+                        <div class="progress-card-heading">
+                            <h2>Consistency</h2>
+                        </div>
+
+                        <div class="consistency-content">
+                            <dl class="consistency-metrics">
+                                <div>
+                                    <dt id="consistencyActiveDays">0</dt>
+                                    <dd>active days</dd>
+                                </div>
+
+                                <div>
+                                    <dt id="consistencyCurrentStreak">0 weeks</dt>
+                                    <dd>current streak</dd>
+                                </div>
+
+                                <div>
+                                    <dt id="consistencyBestStreak">0 weeks</dt>
+                                    <dd>best streak</dd>
+                                </div>
+                            </dl>
+
+                            <div class="consistency-heatmap">
+                                <div class="consistency-weekdays" aria-hidden="true">
+                                    <span>Mon</span>
+                                    <span>Tue</span>
+                                    <span>Wed</span>
+                                    <span>Thu</span>
+                                    <span>Fri</span>
+                                    <span>Sat</span>
+                                    <span>Sun</span>
+                                </div>
+
+                                <div
+                                    id="consistencyGrid"
+                                    class="consistency-grid"
+                                    aria-label="Training consistency calendar"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <p
+                            id="consistencyStatus"
+                            class="consistency-status"
+                            aria-live="polite"
+                        ></p>
+
+                        <div class="consistency-legend">
+                            <span>Light</span>
+                            <i class="level-1"></i>
+                            <i class="level-2"></i>
+                            <i class="level-3"></i>
+                            <i class="level-4"></i>
+                            <span>Very hard</span>
+                        </div>
+                    </section>
+                </div>
 
             </main>
         </section>

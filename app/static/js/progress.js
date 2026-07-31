@@ -21,6 +21,12 @@ const strengthChange = document.querySelector("#strengthChange");
 const strengthStatus = document.querySelector("#strengthStatus");
 const strengthChart = document.querySelector("#strengthChart");
 
+const consistencyActiveDays = document.querySelector("#consistencyActiveDays");
+const consistencyCurrentStreak = document.querySelector("#consistencyCurrentStreak");
+const consistencyBestStreak = document.querySelector("#consistencyBestStreak");
+const consistencyGrid = document.querySelector("#consistencyGrid");
+const consistencyStatus = document.querySelector("#consistencyStatus");
+
 let selectedMonths = 6;
 
 let selectedExerciseName = null;
@@ -79,6 +85,7 @@ export async function loadProgress(months = selectedMonths) {
 
         renderProgressSummary(progress.summary);
         renderWeeklyVolume(progress.weekly_volume);
+        renderConsistency(progress.consistency, progress.period);
 
         progressStatus.textContent = "";
     } catch (error) {
@@ -201,6 +208,18 @@ function formatWeekRange(start, end) {
     });
 
     return `${formatter.format(start)}-${formatter.format(end)}`;
+}
+
+function parseLocalDate(dateString) {
+    return new Date(`${dateString}T00:00:00`);
+}
+
+function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
 }
 
 async function loadProgressExercises() {
@@ -525,4 +544,86 @@ function renderStrengthChart(points) {
     strengthChart.replaceChildren(svg);
 }
 
+
+function renderConsistency(consistency, period) {
+    const periodStart = parseLocalDate(period.start_date);
+    const periodEnd = parseLocalDate(period.end_date);
+
+    const calendarStart = new Date(periodStart);
+    const startOffset = (calendarStart.getDay() + 6) % 7;
+    calendarStart.setDate(calendarStart.getDate() - startOffset);
+
+    const calendarEnd = new Date(periodEnd);
+    const endOffset = 6 - ((calendarEnd.getDay() + 6) % 7);
+    calendarEnd.setDate(calendarEnd.getDate() + endOffset);
+
+    consistencyActiveDays.textContent = consistency.active_days;
+
+    consistencyCurrentStreak.textContent = `${consistency.current_week_streak} weeks`;
+
+    consistencyBestStreak.textContent = `${consistency.best_week_streak} weeks`;
+
+    consistencyGrid.replaceChildren();
+
+    const effortLevels = {
+        light: 1,
+        moderate: 2,
+        hard: 3,
+        very_hard: 4,
+    };
+
+    const activityByDate = new Map(
+        consistency.days.map(function (item) {
+            return [item.date, item];
+        }),
+    );
+
+    const cursor = new Date(calendarStart);
+
+    while (cursor <= calendarEnd) {
+        const dateKey = formatLocalDate(cursor);
+        const activity = activityByDate.get(dateKey);
+
+        const cell = document.createElement("span");
+        cell.classList.add("consistency-cell");
+
+        const isOutsidePeriod = cursor < periodStart || cursor > periodEnd;
+        cell.classList.toggle("is-outside-period", isOutsidePeriod);
+
+        const effort = activity?.effort_level ?? null;
+
+        let levelClass = "level-0";
+
+        if (activity && effort === null) {
+            levelClass = "level-unrated";
+        }
+
+        if (effort !== null) {
+            levelClass = `level-${effortLevels[effort]}`;
+        }
+
+        cell.classList.add(levelClass);
+
+        if (!activity) {
+            cell.title = `${dateKey}: No workouts`;
+        } else if (effort === null) {
+            cell.title =
+                `${dateKey}: ${activity.workouts} workout(s), not rated`;
+        } else {
+            cell.title =
+                `${dateKey}: ${activity.workouts} workout(s), ${effort}`;
+        }
+
+        consistencyGrid.appendChild(cell);
+        cursor.setDate(cursor.getDate() + 1);
+    }
+
+    if (consistency.days.length === 0) {
+        consistencyStatus.textContent =
+            "Complete your first workout to begin building a streak.";
+    } else {
+        consistencyStatus.textContent =
+            `${consistency.active_weeks} active weeks in this period.`;
+    }
+}
 
