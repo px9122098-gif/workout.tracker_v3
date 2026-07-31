@@ -1,9 +1,17 @@
 from fastapi.testclient import TestClient
 from decimal import Decimal
-from datetime import date
+from datetime import datetime, timedelta
 
 from main import app
-from tests.helpers import create_user_and_get_token, create_workout, create_exercise, create_set
+from tests.helpers import (
+    create_user_and_get_token,
+    create_workout,
+    create_exercise,
+    create_set,
+    create_completed_workout_on_date,
+    auth_headers,
+    complete_workout,
+)    
 
 
 client = TestClient(app)
@@ -53,6 +61,14 @@ def test_progress_overview_for_user_without_workouts():
         Decimal(item["volume"]) == Decimal("0")
         for item in data["weekly_volume"]
     )
+
+    consistency = data["consistency"]
+
+    assert consistency["active_days"] == 0
+    assert consistency["active_weeks"] == 0
+    assert consistency["current_week_streak"] == 0
+    assert consistency["best_week_streak"] == 0
+    assert consistency["days"] == []
 
 
 def test_progress_overview_rejects_invalid_period():
@@ -366,4 +382,157 @@ def test_strength_progress_does_not_return_another_users_data():
     assert data_2["current_estimated_1rm"] is None
     assert data_2["change_percent"] is None
     assert data_2["points"] == []
+
+
+def test_progress_overview_returns_consistency(db_session):
+    now = datetime.now()
+
+    current_week_start = (
+        now - timedelta(days=now.weekday())
+    ).replace(
+        hour=10,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+
+    previous_week_start = current_week_start - timedelta(days=7)
+
+    first_date = previous_week_start
+    second_date = previous_week_start + timedelta(days=3)
+    third_date = current_week_start
+
+    token = create_user_and_get_token()
+
+    create_completed_workout_on_date(
+        token,
+        db_session,
+        first_date,
+    )
+    create_completed_workout_on_date(
+        token,
+        db_session,
+        second_date,
+    )
+    create_completed_workout_on_date(
+        token,
+        db_session,
+        third_date,
+    )
+
+    response = client.get(
+        "/api/v1/progress/overview",
+        headers={"Authorization": f"Bearer {token}"},
+        params={"months": 6},
+    )
+
+    assert response.status_code == 200
+
+    consistency = response.json()["consistency"]
+
+    assert consistency["active_days"] == 3
+    assert consistency["active_weeks"] == 2
+    assert consistency["current_week_streak"] == 2
+    assert consistency["best_week_streak"] == 2
+    assert len(consistency["days"]) == 3
+
+    expected_dates = [
+        first_date.date().isoformat(),
+        second_date.date().isoformat(),
+        third_date.date().isoformat(),
+    ]
+
+    actual_dates = [
+        item["date"]
+        for item in consistency["days"]
+    ]
+
+    assert actual_dates == expected_dates
+
+
+def test_progress_consistency_resets_current_streak_after_gap(db_session):
+    now = datetime.now()
+
+    current_week_start = (
+        now - timedelta(days=now.weekday())
+    ).replace(
+        hour=10,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+
+    three_weeks_ago_start = current_week_start - timedelta(days=21)
+    two_weeks_ago_start = current_week_start - timedelta(days=14)
+
+    first_date = three_weeks_ago_start
+    second_date = two_weeks_ago_start
+    third_date = current_week_start
+
+    token = create_user_and_get_token()
+
+    create_completed_workout_on_date(
+        token,
+        db_session,
+        first_date,
+    )
+    create_completed_workout_on_date(
+        token,
+        db_session,
+        second_date,
+    )
+    create_completed_workout_on_date(
+        token,
+        db_session,
+        third_date,
+    )
+
+    response = client.get(
+        "/api/v1/progress/overview",
+        headers={"Authorization": f"Bearer {token}"},
+        params={"months": 6},
+    )
+
+    assert response.status_code == 200
+
+    consistency = response.json()["consistency"]
+
+    assert consistency["active_weeks"] == 3
+    assert consistency["current_week_streak"] == 1
+    assert consistency["best_week_streak"] == 2
+
+
+def test_progress_consistency_groups_same_day_and_uses_highest_effort(db_session):
+    now = datetime.now()
+
+    token = create_user_and_get_token()
+
+    create_completed_workout_on_date(
+        token,
+        db_session,
+        now,
+        "light"
+    )
+    create_completed_workout_on_date(
+        token,
+        db_session,
+        now,
+        "very_hard"
+    )
+
+    response = client.get(
+        "/api/v1/progress/overview",
+        headers={"Authorization": f"Bearer {token}"},
+        params={"months": 6},
+    )
+
+    assert response.status_code == 200
+
+    consistency = response.json()["consistency"]
+
+    assert consistency["active_days"] == 1
+    assert consistency["days"][0]["workouts"] == 2
+    assert consistency["days"][0]["effort_level"] == "very_hard"
+
+
 

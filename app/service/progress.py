@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 from fastapi import HTTPException
@@ -8,11 +8,22 @@ from sqlalchemy.orm import Session
 from app.models import User, Workout
 from app.repository import progress as progress_repository
 from app.schemas import (
+    ProgressConsistencyDayResponse,
+    ProgressConsistencyResponse,
     ProgressOverviewResponse,
     ExerciseProgressOptionResponse,
     StrengthProgressPointResponse,
     StrengthProgressResponse,
 )
+
+
+EFFORT_RANK = {
+    None: 0,
+    "light": 1,
+    "moderate": 2,
+    "hard": 3,
+    "very_hard": 4,
+}
 
 
 def shift_months(value: datetime, months: int) -> datetime:
@@ -73,6 +84,14 @@ def get_progress_overview(db: Session, current_user: User, months: int) -> Progr
         if workout.date >= current_start
     ]
 
+    today = now.date()
+
+    current_week_start = (
+        today - timedelta(days=today.weekday())
+    )
+
+    consistency = calculate_consistency(current_workouts, current_week_start)
+
     previous_volume = Decimal("0")
     for workout in previous_workouts:
         previous_volume += calculate_workout_volume(workout)
@@ -125,6 +144,7 @@ def get_progress_overview(db: Session, current_user: User, months: int) -> Progr
             "volume_change_percent": change_percent,
         },
         weekly_volume=weekly_volume,
+        consistency=consistency,
     )
 
         
@@ -238,5 +258,94 @@ def get_strength_progress(
         change_percent=change_percent,
         points=points,
     )
+
+
+def calculate_consistency(
+    workouts: list[Workout],
+    current_week_start: date,
+) -> ProgressConsistencyResponse:
+    days_by_date = {}
+
+    for workout in workouts:
+        workout_date = workout.date.date()
+
+        if workout_date not in days_by_date:
+            days_by_date[workout_date] = {
+                "workouts": 0,
+                "effort_level": None,
+            }
+
+        day_data = days_by_date[workout_date]
+        day_data["workouts"] += 1
+
+        saved_effort = day_data["effort_level"]
+        incoming_effort = workout.effort_level
+
+        if (
+            EFFORT_RANK.get(incoming_effort, 0)
+            > EFFORT_RANK.get(saved_effort, 0)
+        ):
+            day_data["effort_level"] = incoming_effort
+
+    active_week_starts = {
+        workout_date - timedelta(days=workout_date.weekday())
+        for workout_date in days_by_date
+    }
+
+    sorted_weeks = sorted(active_week_starts)
+
+    best_week_streak = 0
+    running_streak = 0
+    previous_week = None
+
+    for week_start in sorted_weeks:
+        is_consecutive = (
+            previous_week is not None
+            and week_start - previous_week == timedelta(days=7)
+        )
+
+        if is_consecutive:
+            running_streak += 1
+        else:
+            running_streak = 1
+
+        best_week_streak = max(
+            best_week_streak,
+            running_streak,
+        )
+        previous_week = week_start
+
+    streak_cursor = current_week_start
+
+    if streak_cursor not in active_week_starts:
+        streak_cursor -= timedelta(days=7)
+
+    current_week_streak = 0
+
+    while streak_cursor in active_week_starts:
+        current_week_streak += 1
+        streak_cursor -= timedelta(days=7)
+
+    days = [
+        ProgressConsistencyDayResponse(
+            date=workout_date,
+            workouts=day_data["workouts"],
+            effort_level=day_data["effort_level"],
+        )
+        for workout_date, day_data
+        in sorted(days_by_date.items())
+    ]
+
+    return ProgressConsistencyResponse(
+        active_days=len(days_by_date),
+        active_weeks=len(active_week_starts),
+        current_week_streak=current_week_streak,
+        best_week_streak=best_week_streak,
+        days=days,
+    )
+
+
+
+
 
 
