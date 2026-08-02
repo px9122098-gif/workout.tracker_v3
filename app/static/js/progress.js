@@ -2,6 +2,7 @@ import {
     getProgressExercises,
     getProgressOverview,
     getStrengthProgress,
+    getPersonalRecords,
 } from "./api.js";
 
 
@@ -27,6 +28,9 @@ const consistencyBestStreak = document.querySelector("#consistencyBestStreak");
 const consistencyGrid = document.querySelector("#consistencyGrid");
 const consistencyStatus = document.querySelector("#consistencyStatus");
 
+const personalRecordsList = document.querySelector("#personalRecordsList");
+const personalRecordsStatus = document.querySelector("#personalRecordsStatus");
+
 let selectedMonths = 6;
 
 let selectedExerciseName = null;
@@ -35,6 +39,7 @@ let exerciseOptionsLoaded = false;
 export function setupProgress() {
     progressNavButton.addEventListener("click", function () {
         loadProgress(selectedMonths);
+        loadPersonalRecords();
 
         if (!exerciseOptionsLoaded) {
             loadProgressExercises();
@@ -318,6 +323,26 @@ async function loadStrengthProgress() {
     }
 }
 
+async function loadPersonalRecords() {
+    personalRecordsStatus.textContent = "Loading personal records...";
+
+    try {
+        const response = await getPersonalRecords(3);
+
+        if (!response.ok) {
+            throw new Error("Personal records were not loaded");
+        }
+
+        const records = await response.json();
+
+        personalRecordsStatus.textContent = "";
+        renderPersonalRecords(records);
+    } catch (error) {
+        personalRecordsList.replaceChildren();
+        personalRecordsStatus.textContent = error.message;
+    }
+}
+
 function renderStrengthProgress(data) {
     strengthChart.replaceChildren();
     strengthChange.classList.remove(
@@ -554,7 +579,6 @@ function renderStrengthChart(points) {
     strengthChart.replaceChildren(svg);
 }
 
-
 function renderConsistency(consistency, period) {
     const periodStart = parseLocalDate(period.start_date);
     const periodEnd = parseLocalDate(period.end_date);
@@ -637,3 +661,57 @@ function renderConsistency(consistency, period) {
     }
 }
 
+function renderPersonalRecords(records) {
+    personalRecordsList.replaceChildren();
+
+    if (records.length === 0) {
+        personalRecordsStatus.textContent =
+            "Complete a weighted exercise to set your first period.";
+        return;
+    }
+
+    records.forEach(function (record) {
+        const row = document.createElement("article");
+        row.className = "personal-record-row";
+
+        const mark = document.createElement("span");
+        mark.className = "personal-record-mark";
+        mark.textContent = record.exercise_name.charAt(0).toUpperCase();
+
+        const identity = document.createElement("div");
+        identity.className = "personal-record-identity";
+
+        const name = document.createElement("strong");
+        name.textContent = record.exercise_name;
+
+        const estimate = document.createElement("small");
+        estimate.textContent =
+            `Estimated 1RM: ${Number(record.estimated_1rm).toLocaleString("en-US", {
+                maximumFractionDigits: 1,
+            })} kg`;
+
+        identity.append(name, estimate);
+
+        const result = document.createElement("div");
+        result.className = "personal-record-result";
+
+        const setResult = document.createElement("strong");
+        setResult.textContent =
+            `${Number(record.weight).toLocaleString("en-US", {
+                maximumFractionDigits: 2,
+            })} kg × ${record.reps}`;
+
+        const recordDate = document.createElement("small");
+        recordDate.textContent = parseLocalDate(record.workout_date)
+            .toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+            });
+
+        result.append(setResult, recordDate);
+
+        row.append(mark, identity, result);
+        personalRecordsList.append(row);
+    });
+}

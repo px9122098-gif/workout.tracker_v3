@@ -297,40 +297,58 @@
 
                     <strong id="progressTrendValue">-</strong>
                 </section>
+                <div class="progress-primary-grid">
+                    <section class="strength-progress-card dashboard-card">
+                        <div class="strength-progress-heading">
+                            <div>
+                                <h2>Strength progress</h2>
 
-                <section class="strength-progress-card dashboard-card">
-                    <div class="strength-progress-heading">
-                        <div>
-                            <h2>Strength progress</h2>
+                                <select
+                                id="strengthExerciseSelect"
+                                aria-label="Exercise for strength progress"
+                                disabled
+                                >
+                                    <option>Loading exercises...</option>
+                                </select>
+                            </div>
 
-                            <select
-                            id="strengthExerciseSelect"
-                            aria-label="Exercise for strength progress"
-                            disabled
-                            >
-                                <option>Loading exercises...</option>
-                            </select>
+                            <div class="strength-current">
+                                <strong id="strengthCurrentValue">--</strong>
+                                <span>estimated 1RM</span>
+                                <small id="strengthChange"></small>
+                            </div>
                         </div>
 
-                        <div class="strength-current">
-                            <strong id="strengthCurrentValue">--</strong>
-                            <span>estimated 1RM</span>
-                            <small id="strengthChange"></small>
+                        <p
+                            id="strengthStatus"
+                            class="strength-status"
+                            aria-live="polite"
+                        ></p>
+
+                        <div
+                            id="strengthChart"
+                            class="strength-chart"
+                        ></div>
+                    </section>
+
+                    <section class="personal-records-card dashboard-card">
+                        <div class="progress-card-heading">
+                            <h2>Personal records</h2>
                         </div>
-                    </div>
 
-                    <p
-                        id="strengthStatus"
-                        class="strength-status"
-                        aria-live="polite"
-                    ></p>
+                        <p
+                            id="personalRecordsStatus"
+                            class="personal-records-status"
+                            aria-live="polite"
+                        ></p>
 
-                    <div
-                        id="strengthChart"
-                        class="strength-chart"
-                    ></div>
-                </section>
-
+                        <div
+                            id="personalRecordsList"
+                            class="personal-records-list"
+                        ></div>
+                    </section>
+                </div>
+                
                 <div class="progress-analytics-grid">
                     <section class="weekly-volume-card dashboard-card">
                         <div class="progress-card-heading">

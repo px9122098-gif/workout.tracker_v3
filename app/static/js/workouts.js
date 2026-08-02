@@ -11,6 +11,7 @@ import { showPage } from "./navigation.js";
 const workoutNameInput = document.querySelector("#workoutNameInput");
 const workoutsList = document.querySelector("#workoutsList");
 const workoutDetails = document.querySelector("#workoutDetails");
+const workoutsMonthTitle = document.querySelector("#workoutsMonthTitle");
 
 const openCreateWorkoutBtn = document.querySelector("#openCreateWorkoutBtn");
 const createWorkoutPanel = document.querySelector("#createWorkoutPanel");
@@ -289,7 +290,28 @@ export async function loadWorkouts() {
 
     const overview = await response.json();
 
+    const displayedMonth = new Date(
+        overview.year,
+        overview.month - 1,
+        1,
+    );
+
+    workoutsMonthTitle.textContent = displayedMonth.toLocaleDateString(
+        "en-US",
+        {
+            month: "long",
+            year: "numeric",
+        },
+    );
+
     workoutsList.replaceChildren();
+
+    if (overview.workouts.length === 0) {
+        const emptyState = document.createElement("p");
+        emptyState.className = "workouts-empty-state";
+        emptyState.textContent = "No workouts recorded this month yet.";
+        workoutsList.append(emptyState);
+    }
 
     overview.workouts.forEach(function (workout) {
         renderWorkoutCard(workout);

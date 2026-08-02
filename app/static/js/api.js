@@ -203,6 +203,16 @@ export function getStrengthProgress(exerciseName, months = 6) {
     );
 }
 
+export function getPersonalRecords(limit = 3) {
+    const params = new URLSearchParams({
+        limit: String(limit),
+    });
+
+    return authFetch(
+        `${API_URL}/progress/personal-records?${params.toString()}`
+    );
+}
+
 export async function getWorkouts() {
     return authFetch(`${API_URL}/workouts`);
 }

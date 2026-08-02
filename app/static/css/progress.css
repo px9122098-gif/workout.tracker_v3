@@ -410,3 +410,67 @@
     }
 }
 
+.progress-primary-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
+    gap: 16px;
+}
+
+.personal-records-card {
+    min-width: 0;
+    padding: 22px 28px;
+}
+
+.personal-records-list {
+    margin-top: 16px;
+    display: grid;
+}
+
+.personal-record-row {
+    min-height: 78px;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e9e7;
+}
+
+.personal-record-row:last-child {
+    border-bottom: 0;
+}
+
+.personal-record-mark {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 7px;
+    background: #159947;
+    color: #fff;
+    font-weight: 700;
+}
+
+.personal-record-identity,
+.personal-record-result {
+    display: grid;
+    gap: 3px;
+}
+
+.personal-record-result {
+    justify-items: end;
+    text-align: right;
+}
+
+.personal-record-identity small,
+.personal-record-result small,
+.personal-records-status {
+    color: #64748b;
+    font-size: 12px;
+}
+
+@media (max-width: 1050px) {
+    .progress-primary-grid {
+        grid-template-columns: 1fr;
+    }
+}
