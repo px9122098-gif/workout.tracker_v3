@@ -1,5 +1,7 @@
 import { registerUser, loginUser, getCurrentUser } from "./api.js";
 import { loadWorkouts, resetWorkoutsView } from "./workouts.js"
+import { loadDashboard } from "./dashboard.js";
+
 
 const authView = document.querySelector("#authView");
 const dashboardView = document.querySelector("#dashboardView");
@@ -15,7 +17,6 @@ const registerEmailInput = document.querySelector("#registerEmailInput");
 const registerPasswordInput = document.querySelector("#registerPasswordInput");
 const loginEmailInput = document.querySelector("#loginEmailInput");
 const loginPasswordInput = document.querySelector("#loginPasswordInput");
-
 
 function showAuthView() {
     authView.hidden = false;
@@ -61,7 +62,10 @@ export async function initializeApp() {
     showDashboardView();
 
     try {
-        await loadWorkouts();
+        await Promise.all([
+            loadWorkouts(),
+            loadDashboard(),
+        ])
     } catch (error) {
         console.error("Failed to load workouts:", error);
     }
@@ -116,7 +120,10 @@ export function setupAuth() {
     
         loginForm.reset();
         showDashboardView();
-        await loadWorkouts();
+        await Promise.all([
+            loadWorkouts(),
+            loadDashboard(),
+        ]);
     });
     
     logoutBtn.addEventListener("click", function () {

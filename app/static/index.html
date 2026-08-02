@@ -83,6 +83,7 @@
                         <button type="button" class="hero-action js-open-workouts" data-page="workoutsPage">+ Start workout</button>
                     </div>
                 </section>
+                <p id="dashboardStatus" class="dashboard-status" aria-live="polite"></p>
                 <div class="dashboard-grid">
                     <section class="weekly-card dashboard-card">
                         <div class="card-header">
@@ -92,18 +93,18 @@
 
                         <div class="stats-row">
                             <div class="stat-item">
-                                <strong>4</strong>
+                                <strong id="dashboardWeekWorkouts">0</strong>
                                 <span>Workouts completed</span>
                             </div>
                             <div class="stat-item">
-                                <strong>
-                                    18,420 <small>kg</small>
+                                <strong id="dashboardWeekVolume">
+                                    0 <small>kg</small>
                                 </strong>
                                 <span>Total volume</span>
                             </div>
                             <div class="stat-item">
-                                <strong>6</strong>
-                                <span>Day streak</span>
+                                <strong id="dashboardWeekStreak">0</strong>
+                                <span>Week streak</span>
                             </div>
                         </div>
                         <div class="weekly-chart">
@@ -115,44 +116,19 @@
                             <h2>Recent workouts</h2>
                             <button type="button">View all</button>
                         </div>
-                        <div class="recent-list">
-                            <div class="recent-workout-row">
-                                <div class="recent-workout-icon">P</div>
-                                <div class="recent-workout-info">            
-                                    <strong>Push day</strong>
-                                    <span>13.07.2026</span>
-                                </div>
-                                <span class="recent-workout-arrow" aria-hidden="true"></span>
-                            </div>
-                            <div class="recent-workout-row">
-                                <div class="recent-workout-icon">P</div>
-                                <div class="recent-workout-info">
-                                    <strong>Pull day</strong>
-                                    <span>11.07.2026</span>
-                                </div>
-                                <span class="recent-workout-arrow" aria-hidden="true"></span>
-                            </div>
-                            <div class="recent-workout-row">
-                                <div class="recent-workout-icon">L</div>
-                                <div class="recent-workout-info">
-                                    <strong>Legs day</strong>
-                                    <span>09.07.2026</span>
-                                </div>
-                                <span class="recent-workout-arrow" aria-hidden="true"></span>
-                            </div>
-                        </div>
+                        <div id="dashboardRecentWorkouts" class="recent-list"></div>
                     </section>
                 </div>
                 <div class="dashboard-lower-grid">
                     <section class="goal-card dashboard-card">
-                        <div class="goal-ring" aria-label="4 of 5 workouts">
-                            <strong>4</strong>
+                        <div id="dashboardGoalRing" class="goal-ring">
+                            <strong id="dashboardGoalValue">0</strong>
                             <span>of 5</span>
                         </div>
 
                         <div class="goal-content">
-                            <h2>5 Workouts This Week</h2>
-                            <p>You're almost there! One more workout to hit your goal.</p>
+                            <h2 id="dashboardGoalTitle">5 Workouts This Week</h2>
+                            <p id="dashboardGoalMessage">You're almost there! One more workout to hit your goal.</p>
                             <button type="button" class="text-action">View goals</button>
                         </div>
                     </section>
@@ -161,12 +137,12 @@
                         <div class="record-icon" aria-hidden="true">PB</div>
 
                         <div class="record-content">
-                            <h2>Bench Press</h2>
+                            <h2 id="dashboardRecordName">No record yet</h2>
                             <div class="record-value">
-                                <strong>100</strong>
+                                <strong id="dashboardRecordValue">--</strong>
                                 <span>kg</span>
                             </div>
-                            <p>Achieved on Jul 6, 2026</p>
+                            <p id="dashboardRecordDate">Complete a weighted workout</p>
                         </div>
                     </section>
 
