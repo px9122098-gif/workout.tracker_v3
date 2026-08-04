@@ -22,6 +22,9 @@ const dashboardRecordValue = document.querySelector("#dashboardRecordValue");
 const dashboardRecordDate = document.querySelector("#dashboardRecordDate");
 const dashboardStatus = document.querySelector("#dashboardStatus");
 
+const dashboardGoalTitle = document.querySelector("#dashboardGoalTitle");
+const dashboardGoalMessage = document.querySelector("#dashboardGoalMessage");
+
 export function setupDashboard() {
     dashboardNavButton.addEventListener("click", function () {
         loadDashboard();
@@ -146,7 +149,7 @@ function renderDashboardRecord(records) {
         dashboardRecordName.textContent = "No record yet";
         dashboardRecordValue.textContent = "--";
         dashboardRecordDate.textContent = "Complete a weighted workout";
-    } else {    
+    } else {
         const record = records[0];
 
         dashboardRecordName.textContent = record.exercise_name;
@@ -170,7 +173,22 @@ function renderDashboardGoal(workoutCount) {
     );
 
     dashboardGoalValue.textContent = completed;
+
+    const remaining = Math.max(WEEKLY_GOAL - workoutCount, 0);
+
+    if (workoutCount === 0) {
+        dashboardGoalTitle.textContent = "Start your weekly goal";
+        dashboardGoalMessage.textContent =
+                "Complete your first workout to begin.";
+    } else if (remaining > 0) {
+        dashboardGoalTitle.textContent =
+            `${remaining} workout${remaining === 1 ? "" : "s"} left`;
+        dashboardGoalMessage.textContent =
+            "Keep going. Your weekly goal is within reach.";
+    } else {
+        dashboardGoalTitle.textContent = "Weekly goal complete";
+        dashboardGoalMessage.textContent =
+            "Great work. Every additional workout is a bonus.";
+    }
 }
-
-
 

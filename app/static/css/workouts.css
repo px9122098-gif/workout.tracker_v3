@@ -222,6 +222,53 @@
     background: #087f72;
 }
 
+.workout-editor-view {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+#workoutDetails {
+    display: grid;
+    gap: 20px;
+}
+
+.workout-editor-back {
+    width: fit-content;
+    padding: 10px 0;
+    border: 0;
+    background: transparent;
+    color: #079447;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.workout-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 24px;
+    padding: 8px 4px 20px;
+    border-bottom: 1px solid #dde5df;
+}
+
+.workout-details-title {
+    margin: 4px 0 0;
+    font-size: 36px;
+}
+
+.workout-details-date {
+    color: #607067;
+}
+
+.exercise-item {
+    margin-top: 16px;
+    padding: 20px;
+    border: 1px solid #dde4df;
+    border-radius: 8px;
+    background: #fff;
+}
+
 .delete-workout-btn,
 .delete-exercise-btn,
 .delete-set-btn {
@@ -241,11 +288,17 @@
     background-color: #c0392b;
 }
 
-.workout-notes {
-    margin: 16px 0;
-    padding: 14px;
-    background-color: #f3f3f3;
+.workout-notes,
+.end-workout-form {
+    padding: 24px;
+    border: 1px solid #dde5df;
     border-radius: 8px;
+    background: #fff;
+}
+
+.exercises-list {
+    display: grid;
+    gap: 14px;
 }
 
 .notes-input {
@@ -280,12 +333,6 @@
     display: flex;
     gap: 10px;
     margin-top: 10px;
-}
-
-.end-workout-form {
-    display: grid;
-    gap: 16px;
-    margin-top: 18px;
 }
 
 .workout-effort {
@@ -413,23 +460,18 @@
 }
 
 .exercise-item {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-
-    padding: 10px 12px;
-    margin-bottom: 8px;
-
-    background-color: #f4f4f4;
+    margin: 0;
+    padding: 22px;
+    border: 1px solid #dde5df;
     border-radius: 8px;
+    background: #fff;
 }
 
 .exercise-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 6px;
+    gap: 16px;
 }
 
 .exercise-header span {
@@ -443,24 +485,19 @@
 }
 
 .set-item {
-    padding: 6px 8px;
-    background-color: white;
-    border-radius: 6px;
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 6px;
+    display: grid;
+    grid-template-columns: 48px 1fr 1fr 1fr auto;
     align-items: center;
+    gap: 16px;
+    min-height: 54px;
+    padding: 10px 14px;
+    border-top: 1px solid #e5e9e7;
+    background: transparent;
 }
 
-
-
 .details-btn,
-.add-exercise-btn,
 .save-exercise-btn,
 .save-edit-exercise-btn,
-.add-set-btn,
 .save-set-btn,
 #createWorkoutBtn {
     background-color: yellowgreen;
@@ -468,13 +505,24 @@
 }
 
 .details-btn:hover,
-.add-exercise-btn:hover,
 .save-exercise-btn:hover,
 .save-edit-exercise-btn:hover,
-.add-set-btn:hover,
 .save-set-btn:hover,
 #createWorkoutBtn:hover {
     background-color: #75a820;
+}
+
+.add-set-btn,
+.add-exercise-btn {
+    border: 1px solid #0b9b4d;
+    background: #fff;
+    color: #087d3e;
+    font-weight: 700;
+}
+
+.add-set-btn:hover,
+.add-exercise-btn:hover {
+    background: #eff9f2;
 }
 
 .edit-set-form {

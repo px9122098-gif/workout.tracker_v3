@@ -152,96 +152,105 @@
                 </div>
             </main>
             <main id="workoutsPage" class="app-page workouts-page" hidden>
-                <div class="page-heading">
-                    <div>
-                        <h2>Workouts</h2>
-                        <p>Your complete training history</p>
-                    </div>
-
-                    <button type="button" id="openCreateWorkoutBtn" class="new-workout-btn" aria-controls="createWorkoutPanel" aria-expanded="false">+ New workout</button>
-                </div>
-                <section class="workouts-summary">
-                    <div class="summary-main">
-                        <div class="summary-total">
-                            <strong id="monthWorkoutCount">0</strong>
-                            <span>workouts this month</span>
-                        </div>
-                        <p>You're building a strong routine.</p>
-                    </div>
-
-                    <div class="summary-metrics">
+                <section id="workoutsBrowserView">
+                    <div class="page-heading">
                         <div>
-                            <strong id="monthExerciseCount">0</strong>
-                            <span>exercises</span>
+                            <h2>Workouts</h2>
+                            <p>Your complete training history</p>
                         </div>
-                        <div>
-                            <strong id="monthSetCount">0</strong>
-                            <span>sets</span>
-                        </div>
-                        <div>
-                            <strong id="monthVolume">
-                                0 <small>kg</small>
-                            </strong>
-                            <span>volume</span>
-                        </div>
-                    </div>
-                </section>
-                <section class="workouts-toolbar dashboard-card">
-                    <input class="workout-search" placeholder="Search workouts">
-                    
-                    <div class="workout-filters"></div>
 
-                    <select class="workout-sort">
-                        <option>Newest first</option>
-                        <option>Oldest first</option>
-                    </select>
-                </section>
-                <section id="createWorkoutPanel" class="create-workout-panel" hidden>
-                <h2>Create Workout</h2>
-                <form id="createWorkoutForm" class="create-workout-form">
-                    <input id="workoutNameInput" placeholder="Workout name">
-                    <button type="submit" id="createWorkoutBtn">Create</button>
-                    <button type="button" id="cancelCreateWorkoutBtn">Cancel</button>
-                </form>
-                </section>
-                <div class="workouts-main-grid">
-                    <section class="workout-history dashboard-card">
-                        <h2 id="workoutsMonthTitle">July 2026</h2>
-                        <div class="workouts-list" id="workoutsList"></div>
+                        <button type="button" id="openCreateWorkoutBtn" class="new-workout-btn" aria-controls="createWorkoutPanel" aria-expanded="false">+ New workout</button>
+                    </div>
+                    <section class="workouts-summary">
+                        <div class="summary-main">
+                            <div class="summary-total">
+                                <strong id="monthWorkoutCount">0</strong>
+                                <span>workouts this month</span>
+                            </div>
+                            <p>You're building a strong routine.</p>
+                        </div>
+
+                        <div class="summary-metrics">
+                            <div>
+                                <strong id="monthExerciseCount">0</strong>
+                                <span>exercises</span>
+                            </div>
+                            <div>
+                                <strong id="monthSetCount">0</strong>
+                                <span>sets</span>
+                            </div>
+                            <div>
+                                <strong id="monthVolume">
+                                    0 <small>kg</small>
+                                </strong>
+                                <span>volume</span>
+                            </div>
+                        </div>
                     </section>
+                    <section class="workouts-toolbar dashboard-card">
+                        <input class="workout-search" placeholder="Search workouts">
+                    
+                        <div class="workout-filters"></div>
 
-                    <aside class="workouts-sidebar">
-                        <section class="month-activity dashboard-card">
-                            <div class="analytics-heading">
-                                <h2 id="activityMonthTitle">Month activity</h2>
-                            </div>
-
-                            <div class="activity-weekdays">
-                                <span>Mon</span><span>Tue</span><span>Wed</span>
-                                <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                            </div>
-
-                            <div id="activityGrid" class="activity-grid"></div>
-
-                            <div class="activity-legend">
-                                <span>Light</span>
-                                <i class="level-1"></i>
-                                <i class="level-2"></i>
-                                <i class="level-3"></i>
-                                <i class="level-4"></i>
-                                <span>Very hard</span>
-                            </div>
+                        <select class="workout-sort">
+                            <option>Newest first</option>
+                            <option>Oldest first</option>
+                        </select>
+                    </section>
+                    <section id="createWorkoutPanel" class="create-workout-panel" hidden>
+                    <h2>Create Workout</h2>
+                    <form id="createWorkoutForm" class="create-workout-form">
+                        <input id="workoutNameInput" placeholder="Workout name">
+                        <button type="submit" id="createWorkoutBtn">Create</button>
+                        <button type="button" id="cancelCreateWorkoutBtn">Cancel</button>
+                    </form>
+                    </section>
+                    <div class="workouts-main-grid">
+                        <section class="workout-history dashboard-card">
+                            <h2 id="workoutsMonthTitle">July 2026</h2>
+                            <div class="workouts-list" id="workoutsList"></div>
                         </section>
 
-                        <section class="monthly-summary dashboard-card">
-                            <h2>Monthly summary</h2>
+                        <aside class="workouts-sidebar">
+                            <section class="month-activity dashboard-card">
+                                <div class="analytics-heading">
+                                    <h2 id="activityMonthTitle">Month activity</h2>
+                                </div>
 
-                            <div id="monthlySummaryList" class="monthly-summary-list"></div>
-                        </section>
-                    </aside>
-                </div>
+                                <div class="activity-weekdays">
+                                    <span>Mon</span><span>Tue</span><span>Wed</span>
+                                    <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                                </div>
 
-                <section class="workout-details dashboard-card" id="workoutDetails" hidden></section>
+                                <div id="activityGrid" class="activity-grid"></div>
+
+                                <div class="activity-legend">
+                                    <span>Light</span>
+                                    <i class="level-1"></i>
+                                    <i class="level-2"></i>
+                                    <i class="level-3"></i>
+                                    <i class="level-4"></i>
+                                    <span>Very hard</span>
+                                </div>
+                            </section>
+
+                            <section class="monthly-summary dashboard-card">
+                                <h2>Monthly summary</h2>
+
+                                <div id="monthlySummaryList" class="monthly-summary-list"></div>
+                            </section>
+                        </aside>
+                    </div>
+                </section>
+
+                <section id="workoutEditorView" class="workout-editor-view" hidden>
+                    <button type="button" id="closeWorkoutEditorBtn"
+                            class="workout-editor-back">
+                        Back to workouts
+                    </button>
+
+                    <div id="workoutDetails"></div>
+                </section>
             </main>
             <main id="progressPage" class="app-page progress-page" hidden>
                 <div class="progress-heading-row">

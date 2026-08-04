@@ -19,9 +19,13 @@ export function renderWorkoutDetails(workout) {
     const notesText = workout.notes ? workout.notes : "No notes yet";
 
     workoutDetails.innerHTML  = `
-        <h2>Workout Details</h2>
-        <h3 class="workout-details-title"></h3>
-        <p>Date: ${formatDate(workout.date)}</p>
+        <header class="workout-editor-header">
+            <div>
+                <span class="workout-editor-eyebrow">Workout session</span>
+                <h2 class="workout-details-title"></h2>
+                <time class="workout-details-date"></time>
+            </div>
+        </header>
         <div class="workout-notes">
             <p class="workout-notes-text"></p>
             <button type="button" class="edit-notes-btn">Edit notes</button>
@@ -37,6 +41,11 @@ export function renderWorkoutDetails(workout) {
     workoutDetails
         .querySelector(".workout-notes-text")
         .textContent = notesText
+
+    const dateElement = workoutDetails.querySelector(".workout-details-date");
+
+    dateElement.dateTime = workout.date;
+    dateElement.textContent = formatDate(workout.date);
 
     const workoutNotes = workoutDetails.querySelector(".workout-notes");
     const editNotesBtn = workoutDetails.querySelector(".edit-notes-btn");
@@ -423,9 +432,14 @@ export function renderEditExerciseForm(exercise, workout, exerciseItem) {
     editExerciseForm.classList.add("edit-exercise-form");
 
     editExerciseForm.innerHTML = `
-    <input class="edit-exercise-name-input" value="${exercise.name}">
+    <input class="edit-exercise-name-input">
     <button type="button" class="save-edit-exercise-btn">Save</button>
     `;
+
+    const input = editExerciseForm.querySelector(
+        ".edit-exercise-name-input"
+    );
+    input.value = exercise.name;
 
     exerciseItem.appendChild(editExerciseForm);
 

@@ -13,6 +13,10 @@ const workoutsList = document.querySelector("#workoutsList");
 const workoutDetails = document.querySelector("#workoutDetails");
 const workoutsMonthTitle = document.querySelector("#workoutsMonthTitle");
 
+const workoutsBrowserView = document.querySelector("#workoutsBrowserView");
+const workoutEditorView = document.querySelector("#workoutEditorView");
+const closeWorkoutEditorBtn = document.querySelector("#closeWorkoutEditorBtn");
+
 const openCreateWorkoutBtn = document.querySelector("#openCreateWorkoutBtn");
 const createWorkoutPanel = document.querySelector("#createWorkoutPanel");
 const createWorkoutForm = document.querySelector("#createWorkoutForm");
@@ -75,22 +79,11 @@ export function renderWorkoutCard(workout) {
     const detailsBtn = workoutCard.querySelector(".details-btn");
 
     detailsBtn.addEventListener("click", async function () {
-        const response = await getWorkoutDetails(workout.id);
-
-        if (!response.ok) {
-            alert("Workout details were not loaded");
-            return;
+        try {
+            await openWorkoutEditor(workout.id);
+        } catch (error) {
+            alert(error.message);
         }
-
-        const workoutDetailsData = await response.json();
-
-        workoutDetails.hidden = false;
-        renderWorkoutDetails(workoutDetailsData);
-
-        workoutDetails.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-        });
     });
 
     const deleteWorkoutBtn = document.createElement("button");
@@ -257,8 +250,9 @@ export function setupWorkouts() {
 
         const newWorkout = await response.json();
 
-        await loadWorkouts();
         closeCreateWorkoutForm();
+        await loadWorkouts();
+        await openWorkoutEditor(newWorkout.id);
     });
 
     openWorkoutButtons.forEach(function (button) {
@@ -266,6 +260,14 @@ export function setupWorkouts() {
             showPage("workoutsPage");
             openCreateWorkoutForm();
         });
+    });
+
+    closeWorkoutEditorBtn.addEventListener("click", async () => {
+        try {
+            await closeWorkoutEditor();
+        } catch (error) {
+            console.error("Failed to close workout editor:", error);
+        }
     });
 
     document.addEventListener("workout:updated", async function () {
@@ -325,11 +327,39 @@ export async function loadWorkouts() {
     );
 }
 
-export function resetWorkoutsView() {
-    workoutsList.replaceChildren();
+export async function openWorkoutEditor(workoutId) {
+    const response = await getWorkoutDetails(workoutId);
+
+    if (!response.ok) {
+        throw new Error("Workout details were not loaded");
+    }
+
+    const workout = await response.json();
+
+    workoutsBrowserView.hidden = true;
+    workoutEditorView.hidden = false;
+
+    renderWorkoutDetails(workout);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+export async function closeWorkoutEditor() {
+    workoutsBrowserView.hidden = false;
+    workoutEditorView.hidden = true;
     workoutDetails.replaceChildren();
-    workoutDetails.hidden = true;
-    closeCreateWorkoutForm();
+
+    await loadWorkouts();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+    });
+}
+
+export function resetWorkoutsView() {
+    workoutDetails.replaceChildren();
+    workoutEditorView.hidden = true;
+    workoutsBrowserView.hidden = false;
 }
 
 function openCreateWorkoutForm() {

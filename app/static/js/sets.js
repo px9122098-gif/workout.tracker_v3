@@ -56,14 +56,11 @@ export function renderSetForm(exercise, workout, exerciseItem, addSetBtn) {
     setForm.classList.add("set-form");
 
     setForm.innerHTML = `
-        <input
-        class="set-weight-input"
-        placeholder="Weight"
-        >
-        <input
-        class="set-reps-input"
-        placeholder="Reps"
-        >
+        <input type="number" min="0" step="0.25" class="set-weight-input"
+                inputmode="decimal" aria-label="Weight in kilograms">
+
+        <input type="number" min="1" step="1" class="set-reps-input"
+                inputmode="numeric" aria-label="Repetitions">
         <button type="button" class="save-set-btn">Save</button>
         `;
         
