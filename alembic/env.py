@@ -1,12 +1,10 @@
-import os
-
-from dotenv import load_dotenv
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from app.config import settings
 from app.database import Base
 from app import models
 
@@ -14,12 +12,7 @@ from app import models
 # access to the values within the .ini file in use.
 config = context.config
 
-load_dotenv()
-
-database_url = os.getenv("DATABASE_URL")
-
-if database_url:
-    config.set_main_option("sqlalchemy.url", database_url)
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -87,4 +80,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

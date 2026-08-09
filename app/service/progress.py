@@ -16,6 +16,7 @@ from app.schemas import (
     ProgressOverviewResponse,
     PersonalRecordItemResponse,
 )
+from app.time_utils import app_now
 
 
 EFFORT_RANK = {
@@ -48,7 +49,7 @@ def get_progress_overview(
     current_user: User,
     months: int
 ) -> ProgressOverviewResponse:
-    now = datetime.now()
+    now = app_now()
     current_month_start = datetime(now.year, now.month, 1)
 
     current_end = shift_months(current_month_start, 1)
@@ -195,7 +196,7 @@ def get_strength_progress(
 
     normalized_name = clean_name.lower()
 
-    now = datetime.now()
+    now = app_now()
     current_month_start = datetime(
         now.year,
         now.month,

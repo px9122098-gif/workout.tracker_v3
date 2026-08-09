@@ -34,11 +34,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
         if user_id is None:
             raise credentials_exception
+
+        user_id = int(user_id)
         
-    except JWTError:
+    except (JWTError, TypeError, ValueError):
         raise credentials_exception
     
-    user = users_repository.get_user_by_id(db, int(user_id))
+    user = users_repository.get_user_by_id(db, user_id)
 
     if user is None:
         raise credentials_exception
