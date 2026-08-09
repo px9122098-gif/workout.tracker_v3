@@ -3,6 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from decimal import Decimal
 from app.database import Base
+from app.time_utils import app_now
 
 
 class User(Base):
@@ -11,7 +12,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now())
+    created_at: Mapped[datetime] = mapped_column(default=app_now)
     workouts = relationship("Workout", back_populates="user", cascade="all, delete-orphan", order_by="Workout.id")
 
 
@@ -27,9 +28,14 @@ class Workout(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("app_users.id"), nullable=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("app_users.id"),
+        nullable=False,
+        index=True,
+    )
     title: Mapped[str] = mapped_column(String(127))
-    date: Mapped[datetime] = mapped_column(default=lambda: datetime.now())
+    date: Mapped[datetime] = mapped_column(default=app_now)
     completed_at: Mapped[datetime | None] = mapped_column(nullable=True)
     user = relationship("User", back_populates="workouts")
     exercises = relationship("Exercise", back_populates="workout", cascade="all, delete-orphan", order_by="Exercise.id")

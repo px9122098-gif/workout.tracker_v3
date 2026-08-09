@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from app.schemas import CreateWorkoutRequest, UpdateWorkoutRequest, CompleteWorkoutRequest, WorkoutResponse
 from app.repository import workouts as workouts_repository
 from app.models import User
+from app.time_utils import app_now
 
 def create_workout(db: Session, workout_data: CreateWorkoutRequest, current_user: User) -> WorkoutResponse:
     title = workout_data.title.strip()
@@ -68,7 +69,7 @@ def complete_workout(
         )
     
     changes = {
-        "completed_at": datetime.now(),
+        "completed_at": app_now(),
     }
 
     if workout_data.effort_level is not None:

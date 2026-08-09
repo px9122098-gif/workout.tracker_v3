@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout tracker</title>
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/auth.css">
-    <link rel="stylesheet" href="css/workouts.css">
-    <link rel="stylesheet" href="css/progress.css">
+    <link rel="stylesheet" href="css/base.css?v=3.0.0">
+    <link rel="stylesheet" href="css/layout.css?v=3.0.0">
+    <link rel="stylesheet" href="css/dashboard.css?v=3.0.0">
+    <link rel="stylesheet" href="css/header.css?v=3.0.0">
+    <link rel="stylesheet" href="css/auth.css?v=3.0.0">
+    <link rel="stylesheet" href="css/workouts.css?v=3.0.0">
+    <link rel="stylesheet" href="css/progress.css?v=3.0.0">
 </head>
 <body>
     <div class="app">
@@ -20,8 +20,8 @@
                 <div class="form-container register-container">
                     <form id="registerForm">
                         <h2>Create Account</h2>
-                        <input id="registerEmailInput" type="email" placeholder="Email">
-                        <input id="registerPasswordInput" type="password" placeholder="Password">
+                        <input id="registerEmailInput" type="email" placeholder="Email" autocomplete="email" required>
+                        <input id="registerPasswordInput" type="password" placeholder="Password" autocomplete="new-password" minlength="8" required>
                         <button type="submit">Sign Up</button>
                     </form>
                 </div>
@@ -29,8 +29,8 @@
                 <div class="form-container login-container">
                     <form id="loginForm">
                         <h2>Sign In</h2>
-                        <input id="loginEmailInput" type="email" placeholder="Email">
-                        <input id="loginPasswordInput" type="password" placeholder="Password">
+                        <input id="loginEmailInput" type="email" placeholder="Email" autocomplete="email" required>
+                        <input id="loginPasswordInput" type="password" placeholder="Password" autocomplete="current-password" required>
                         <button type="submit">Sign In</button>
                     </form>
                 </div>
@@ -53,6 +53,17 @@
                     </div>
                 </div>
 
+                <p id="authStatus" class="auth-status" aria-live="polite"></p>
+
+            </div>
+        </section>
+
+        <section id="appStateView" class="app-state-view" hidden>
+            <div class="app-state-card">
+                <span class="app-state-mark" aria-hidden="true">WT</span>
+                <h2 id="appStateTitle">Checking your session</h2>
+                <p id="appStateMessage">Connecting to Workout Tracker...</p>
+                <button type="button" id="retryAppBtn" class="primary-button" hidden>Try again</button>
             </div>
         </section>
 
@@ -70,8 +81,8 @@
                 </nav>
 
                 <div class="user-menu">
-                    <span class="user-avatar">A</span>
-                    <span class="user-email">alex@example.com</span>
+                    <span id="userAvatar" class="user-avatar">A</span>
+                    <span id="userEmail" class="user-email">Account</span>
                     <button type="button" id="logoutBtn" class="logout-btn" aria-label="Log out">Exit</button>
                 </div>
             </header>
@@ -80,9 +91,10 @@
                     <div class="hero-content">
                         <h2>Ready for your next workout?</h2>
                         <p>Build momentum, one set at a time.</p>
-                        <button type="button" class="hero-action js-open-workouts" data-page="workoutsPage">+ Start workout</button>
+                        <button type="button" class="hero-action js-open-workouts" data-workout-action="create">+ Start workout</button>
                     </div>
                 </section>
+                <p id="dashboardStatus" class="dashboard-status" aria-live="polite"></p>
                 <div class="dashboard-grid">
                     <section class="weekly-card dashboard-card">
                         <div class="card-header">
@@ -92,67 +104,40 @@
 
                         <div class="stats-row">
                             <div class="stat-item">
-                                <strong>4</strong>
+                                <strong id="dashboardWeekWorkouts">0</strong>
                                 <span>Workouts completed</span>
                             </div>
                             <div class="stat-item">
-                                <strong>
-                                    18,420 <small>kg</small>
+                                <strong id="dashboardWeekVolume">
+                                    0 <small>kg</small>
                                 </strong>
                                 <span>Total volume</span>
                             </div>
                             <div class="stat-item">
-                                <strong>6</strong>
-                                <span>Day streak</span>
+                                <strong id="dashboardWeekStreak">0</strong>
+                                <span>Week streak</span>
                             </div>
                         </div>
-                        <div class="weekly-chart">
-                            <div class="chart-line"></div>
-                        </div>
+                        <div id="dashboardWeekChart" class="dashboard-week-chart" aria-label="Recent weekly training volume"></div>
                     </section>
                     <section class="recent-card dashboard-card">
                         <div class="card-header">
                             <h2>Recent workouts</h2>
-                            <button type="button">View all</button>
+                            <button type="button" class="js-open-workouts" data-workout-action="browse">View all</button>
                         </div>
-                        <div class="recent-list">
-                            <div class="recent-workout-row">
-                                <div class="recent-workout-icon">P</div>
-                                <div class="recent-workout-info">            
-                                    <strong>Push day</strong>
-                                    <span>13.07.2026</span>
-                                </div>
-                                <span class="recent-workout-arrow" aria-hidden="true"></span>
-                            </div>
-                            <div class="recent-workout-row">
-                                <div class="recent-workout-icon">P</div>
-                                <div class="recent-workout-info">
-                                    <strong>Pull day</strong>
-                                    <span>11.07.2026</span>
-                                </div>
-                                <span class="recent-workout-arrow" aria-hidden="true"></span>
-                            </div>
-                            <div class="recent-workout-row">
-                                <div class="recent-workout-icon">L</div>
-                                <div class="recent-workout-info">
-                                    <strong>Legs day</strong>
-                                    <span>09.07.2026</span>
-                                </div>
-                                <span class="recent-workout-arrow" aria-hidden="true"></span>
-                            </div>
-                        </div>
+                        <div id="dashboardRecentWorkouts" class="recent-list"></div>
                     </section>
                 </div>
                 <div class="dashboard-lower-grid">
                     <section class="goal-card dashboard-card">
-                        <div class="goal-ring" aria-label="4 of 5 workouts">
-                            <strong>4</strong>
+                        <div id="dashboardGoalRing" class="goal-ring">
+                            <strong id="dashboardGoalValue">0</strong>
                             <span>of 5</span>
                         </div>
 
                         <div class="goal-content">
-                            <h2>5 Workouts This Week</h2>
-                            <p>You're almost there! One more workout to hit your goal.</p>
+                            <h2 id="dashboardGoalTitle">5 Workouts This Week</h2>
+                            <p id="dashboardGoalMessage">You're almost there! One more workout to hit your goal.</p>
                             <button type="button" class="text-action">View goals</button>
                         </div>
                     </section>
@@ -161,111 +146,124 @@
                         <div class="record-icon" aria-hidden="true">PB</div>
 
                         <div class="record-content">
-                            <h2>Bench Press</h2>
+                            <h2 id="dashboardRecordName">No record yet</h2>
                             <div class="record-value">
-                                <strong>100</strong>
+                                <strong id="dashboardRecordValue">--</strong>
                                 <span>kg</span>
                             </div>
-                            <p>Achieved on Jul 6, 2026</p>
+                            <p id="dashboardRecordDate">Complete a weighted workout</p>
                         </div>
                     </section>
 
                     <div class="quick-action-area dashboard-card">
-                        <button type="button" class="dashboard-new-workout-btn js-open-workouts" data-page="workoutsPage">+ New workout</button>
+                        <button type="button" class="dashboard-new-workout-btn js-open-workouts" data-workout-action="create">+ New workout</button>
                     </div>
                 </div>
             </main>
             <main id="workoutsPage" class="app-page workouts-page" hidden>
-                <div class="page-heading">
-                    <div>
-                        <h2>Workouts</h2>
-                        <p>Your complete training history</p>
-                    </div>
-
-                    <button type="button" id="openCreateWorkoutBtn" class="new-workout-btn" aria-controls="createWorkoutPanel" aria-expanded="false">+ New workout</button>
-                </div>
-                <section class="workouts-summary">
-                    <div class="summary-main">
-                        <div class="summary-total">
-                            <strong id="monthWorkoutCount">0</strong>
-                            <span>workouts this month</span>
-                        </div>
-                        <p>You're building a strong routine.</p>
-                    </div>
-
-                    <div class="summary-metrics">
+                <section id="workoutsBrowserView">
+                    <div class="page-heading">
                         <div>
-                            <strong id="monthExerciseCount">0</strong>
-                            <span>exercises</span>
+                            <h2>Workouts</h2>
+                            <p>Your complete training history</p>
                         </div>
-                        <div>
-                            <strong id="monthSetCount">0</strong>
-                            <span>sets</span>
-                        </div>
-                        <div>
-                            <strong id="monthVolume">
-                                0 <small>kg</small>
-                            </strong>
-                            <span>volume</span>
-                        </div>
-                    </div>
-                </section>
-                <section class="workouts-toolbar dashboard-card">
-                    <input class="workout-search" placeholder="Search workouts">
-                    
-                    <div class="workout-filters"></div>
 
-                    <select class="workout-sort">
-                        <option>Newest first</option>
-                        <option>Oldest first</option>
-                    </select>
-                </section>
-                <section id="createWorkoutPanel" class="create-workout-panel" hidden>
-                <h2>Create Workout</h2>
-                <form id="createWorkoutForm" class="create-workout-form">
-                    <input id="workoutNameInput" placeholder="Workout name">
-                    <button type="submit" id="createWorkoutBtn">Create</button>
-                    <button type="button" id="cancelCreateWorkoutBtn">Cancel</button>
-                </form>
-                </section>
-                <div class="workouts-main-grid">
-                    <section class="workout-history dashboard-card">
-                        <h2 id="workoutsMonthTitle">July 2026</h2>
-                        <div class="workouts-list" id="workoutsList"></div>
+                        <button type="button" id="openCreateWorkoutBtn" class="new-workout-btn" aria-controls="createWorkoutPanel" aria-expanded="false">+ New workout</button>
+                    </div>
+                    <section class="workouts-summary">
+                        <div class="summary-main">
+                            <div class="summary-total">
+                                <strong id="monthWorkoutCount">0</strong>
+                                <span>workouts this month</span>
+                            </div>
+                            <p>You're building a strong routine.</p>
+                        </div>
+
+                        <div class="summary-metrics">
+                            <div>
+                                <strong id="monthExerciseCount">0</strong>
+                                <span>exercises</span>
+                            </div>
+                            <div>
+                                <strong id="monthSetCount">0</strong>
+                                <span>sets</span>
+                            </div>
+                            <div>
+                                <strong id="monthVolume">
+                                    0 <small>kg</small>
+                                </strong>
+                                <span>volume</span>
+                            </div>
+                        </div>
                     </section>
+                    <section class="workouts-toolbar dashboard-card">
+                        <input id="workoutSearchInput" class="workout-search" type="search" placeholder="Search workouts" aria-label="Search workouts">
+                    
+                        <div class="workout-filters" aria-label="Workout status filter">
+                            <button type="button" class="filter-chip active" data-workout-filter="all">All</button>
+                            <button type="button" class="filter-chip" data-workout-filter="completed">Completed</button>
+                            <button type="button" class="filter-chip" data-workout-filter="draft">In progress</button>
+                        </div>
 
-                    <aside class="workouts-sidebar">
-                        <section class="month-activity dashboard-card">
-                            <div class="analytics-heading">
-                                <h2 id="activityMonthTitle">Month activity</h2>
-                            </div>
-
-                            <div class="activity-weekdays">
-                                <span>Mon</span><span>Tue</span><span>Wed</span>
-                                <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                            </div>
-
-                            <div id="activityGrid" class="activity-grid"></div>
-
-                            <div class="activity-legend">
-                                <span>Light</span>
-                                <i class="level-1"></i>
-                                <i class="level-2"></i>
-                                <i class="level-3"></i>
-                                <i class="level-4"></i>
-                                <span>Very hard</span>
-                            </div>
+                        <select id="workoutSortSelect" class="workout-sort" aria-label="Sort workouts">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                        </select>
+                    </section>
+                    <section id="createWorkoutPanel" class="create-workout-panel" hidden>
+                    <h2>Create Workout</h2>
+                    <form id="createWorkoutForm" class="create-workout-form">
+                        <input id="workoutNameInput" placeholder="Workout name">
+                        <button type="submit" id="createWorkoutBtn">Create</button>
+                        <button type="button" id="cancelCreateWorkoutBtn">Cancel</button>
+                    </form>
+                    </section>
+                    <div class="workouts-main-grid">
+                        <section class="workout-history dashboard-card">
+                            <h2 id="workoutsMonthTitle">July 2026</h2>
+                            <div class="workouts-list" id="workoutsList"></div>
                         </section>
 
-                        <section class="monthly-summary dashboard-card">
-                            <h2>Monthly summary</h2>
+                        <aside class="workouts-sidebar">
+                            <section class="month-activity dashboard-card">
+                                <div class="analytics-heading">
+                                    <h2 id="activityMonthTitle">Month activity</h2>
+                                </div>
 
-                            <div id="monthlySummaryList" class="monthly-summary-list"></div>
-                        </section>
-                    </aside>
-                </div>
+                                <div class="activity-weekdays">
+                                    <span>Mon</span><span>Tue</span><span>Wed</span>
+                                    <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                                </div>
 
-                <section class="workout-details dashboard-card" id="workoutDetails" hidden></section>
+                                <div id="activityGrid" class="activity-grid"></div>
+
+                                <div class="activity-legend">
+                                    <span>Light</span>
+                                    <i class="level-1"></i>
+                                    <i class="level-2"></i>
+                                    <i class="level-3"></i>
+                                    <i class="level-4"></i>
+                                    <span>Very hard</span>
+                                </div>
+                            </section>
+
+                            <section class="monthly-summary dashboard-card">
+                                <h2>Monthly summary</h2>
+
+                                <div id="monthlySummaryList" class="monthly-summary-list"></div>
+                            </section>
+                        </aside>
+                    </div>
+                </section>
+
+                <section id="workoutEditorView" class="workout-editor-view" hidden>
+                    <button type="button" id="closeWorkoutEditorBtn"
+                            class="workout-editor-back">
+                        <span aria-hidden="true">&larr;</span> Back to workouts
+                    </button>
+
+                    <div id="workoutDetails"></div>
+                </section>
             </main>
             <main id="progressPage" class="app-page progress-page" hidden>
                 <div class="progress-heading-row">
@@ -297,22 +295,133 @@
 
                     <strong id="progressTrendValue">-</strong>
                 </section>
+                <div class="progress-primary-grid">
+                    <section class="strength-progress-card dashboard-card">
+                        <div class="strength-progress-heading">
+                            <div>
+                                <h2>Strength progress</h2>
 
-                <section class="weekly-volume-card dashboard-card">
-                    <div class="progress-card-heading">
-                        <div>
-                            <h2>Weekly volume</h2>
-                            <strong id="progressTotalVolume">0 kg</strong>
+                                <select
+                                id="strengthExerciseSelect"
+                                aria-label="Exercise for strength progress"
+                                disabled
+                                >
+                                    <option>Loading exercises...</option>
+                                </select>
+                            </div>
+
+                            <div class="strength-current">
+                                <strong id="strengthCurrentValue">--</strong>
+                                <span>estimated 1RM</span>
+                                <small id="strengthChange"></small>
+                            </div>
                         </div>
-                    </div>
 
-                    <div id="weeklyVolumeChart" class="weekly-volume-chart"></div>
-                </section>
+                        <p
+                            id="strengthStatus"
+                            class="strength-status"
+                            aria-live="polite"
+                        ></p>
+
+                        <div
+                            id="strengthChart"
+                            class="strength-chart"
+                        ></div>
+                    </section>
+
+                    <section class="personal-records-card dashboard-card">
+                        <div class="progress-card-heading">
+                            <h2>Personal records</h2>
+                        </div>
+
+                        <p
+                            id="personalRecordsStatus"
+                            class="personal-records-status"
+                            aria-live="polite"
+                        ></p>
+
+                        <div
+                            id="personalRecordsList"
+                            class="personal-records-list"
+                        ></div>
+                    </section>
+                </div>
+                
+                <div class="progress-analytics-grid">
+                    <section class="weekly-volume-card dashboard-card">
+                        <div class="progress-card-heading">
+                            <div>
+                                <h2>Weekly volume</h2>
+                                <strong id="progressTotalVolume">0 kg</strong>
+                            </div>
+                        </div>
+                        
+                        <div id="weeklyVolumeChart" class="weekly-volume-chart"></div>
+                    </section>
+
+                    <section class="consistency-card dashboard-card">
+                        <div class="progress-card-heading">
+                            <h2>Consistency</h2>
+                        </div>
+
+                        <div class="consistency-content">
+                            <dl class="consistency-metrics">
+                                <div>
+                                    <dt id="consistencyActiveDays">0</dt>
+                                    <dd>active days</dd>
+                                </div>
+
+                                <div>
+                                    <dt id="consistencyCurrentStreak">0 weeks</dt>
+                                    <dd>current streak</dd>
+                                </div>
+
+                                <div>
+                                    <dt id="consistencyBestStreak">0 weeks</dt>
+                                    <dd>best streak</dd>
+                                </div>
+                            </dl>
+
+                            <div class="consistency-heatmap">
+                                <div class="consistency-weekdays" aria-hidden="true">
+                                    <span>Mon</span>
+                                    <span>Tue</span>
+                                    <span>Wed</span>
+                                    <span>Thu</span>
+                                    <span>Fri</span>
+                                    <span>Sat</span>
+                                    <span>Sun</span>
+                                </div>
+
+                                <div
+                                    id="consistencyGrid"
+                                    class="consistency-grid"
+                                    aria-label="Training consistency calendar"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <p
+                            id="consistencyStatus"
+                            class="consistency-status"
+                            aria-live="polite"
+                        ></p>
+
+                        <div class="consistency-legend">
+                            <span>Light</span>
+                            <i class="level-1"></i>
+                            <i class="level-2"></i>
+                            <i class="level-3"></i>
+                            <i class="level-4"></i>
+                            <span>Very hard</span>
+                        </div>
+                    </section>
+                </div>
 
             </main>
         </section>
     </div>
-<script type="module" src="js/main.js"></script>
+<script type="module" src="js/main.js?v=3.0.0"></script>
 </body>
 </html>
 

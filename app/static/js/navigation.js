@@ -19,4 +19,8 @@ export function showPage(pageId) {
     navLinks.forEach(function (navLink) {
         navLink.classList.toggle("active", navLink.dataset.page === pageId);
     });
+
+    document.dispatchEvent(
+        new CustomEvent("app:page-changed", { detail: { pageId } }),
+    );
 }

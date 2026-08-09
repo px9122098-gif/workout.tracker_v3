@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from main import app
+from app.security import create_access_token
 from tests.helpers import unique_email
 
 
@@ -143,3 +144,15 @@ def test_get_me_without_token_fails():
     response = client.get("/api/v1/auth/me")
 
     assert response.status_code == 401
+
+
+def test_get_me_with_non_numeric_token_subject_fails():
+    token = create_access_token({"sub": "not-a-user-id"})
+
+    response = client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Could not validate credentials"

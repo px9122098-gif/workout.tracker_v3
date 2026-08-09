@@ -1,7 +1,8 @@
-# Workout Tracker v2
+# Workout Tracker v3
 
 ## Description
-An app for tracking workouts, exercises, sets, and workout volume.
+A full-stack workout journal for planning sessions, recording exercises and sets,
+and following training consistency, volume, and strength progress.
 
 ## Stack
 - FastAPI
@@ -11,23 +12,23 @@ An app for tracking workouts, exercises, sets, and workout volume.
 - HTML/CSS/JavaScript
 
 ## Features
-- Create workouts
-- View workout details
-- Add, edit, and delete exercises
-- Add, edit, and delete sets
-- Delete data with confirmation
-- Add workout notes
-- Calculate set, exercise, and workout volume
-- Store data in PostgreSQL
-- Manage database changes with Alembic migrations
+- Registration and JWT authentication
+- Private workout data for every account
+- Create, edit, complete, filter, and delete workouts
+- Record notes, exercises, sets, and perceived effort
+- Live dashboard with weekly totals, recent workouts, goals, and personal best
+- Progress analytics for volume, strength, consistency, and personal records
+- Responsive desktop and mobile interface
+- PostgreSQL storage and Alembic migrations
+- Isolated SQLite test database
 
 ## Getting Started
-1. Create a virtual environment.
-2. Install dependencies.
-3. Create `.env` based on `.env.example`.
-4. Start PostgreSQL.
-5. Apply migrations.
-6. Start FastAPI.
+1. Create and activate a virtual environment.
+2. Install the dependencies.
+3. Copy `.env.example` to `.env` and set a strong `SECRET_KEY`.
+4. Create and start a PostgreSQL database.
+5. Apply the migrations.
+6. Start FastAPI and open `http://127.0.0.1:8000`.
 
 ## Commands
 ```powershell
@@ -36,35 +37,44 @@ An app for tracking workouts, exercises, sets, and workout volume.
 .\.venv\Scripts\uvicorn.exe main:app --reload
 ```
 
+Run the test suite:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
 ## Start PostgreSQL
 ```powershell
 & "C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe" -D "$env:USERPROFILE\postgres-data" -l "$env:USERPROFILE\postgres-data\postgres.log" start
 ```
 
-## Auth endpoints:
-POST /api/v1/auth/register
-POST /api/v1/auth/login
-GET /api/v1/auth/me
+## API
 
-Protected endpoints require:
-Authorization: Bearer <access_token>
+Authentication starts at:
+
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me`
+
+Protected endpoints require `Authorization: Bearer <access_token>`.
+Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
 
 ## Database
 The project uses PostgreSQL. Database schema changes are managed with Alembic migrations.
 
-## Roadmap
+Before a production deployment, provide the environment variables from
+`.env.example`, use a managed PostgreSQL database, run `alembic upgrade head`,
+and serve the application over HTTPS. Never commit `.env` or production secrets.
 
-### v3 Goals
-- Add user registration and login
-- Store hashed passwords instead of plain text passwords
-- Connect workouts to users
-- Protect API endpoints so users can access only their own data
-- Improve frontend structure
-- Consider moving the frontend to React
-- Improve responsive UI for mobile screens
+## Project status
+
+Version 3 is feature-complete for local use. The next version can focus on a
+React frontend, reusable workout programs, an exercise catalogue, and deeper
+analytics.
 
 ### v4 Ideas
+- React frontend
 - Workout programs
-- Exercise history and progress charts
+- Exercise catalogue and aliases
 - Better analytics
 - PWA/mobile-friendly experience

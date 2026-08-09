@@ -202,12 +202,6 @@ class WeeklyVolumeItem(BaseModel):
     volume: Decimal
 
 
-class ProgressOverviewResponse(BaseModel):
-    period: ProgressPeriodResponse
-    summary: ProgressSummaryResponse
-    weekly_volume: list[WeeklyVolumeItem]
-
-
 class ExerciseProgressOptionResponse(BaseModel):
     name: str
 
@@ -224,3 +218,33 @@ class StrengthProgressResponse(BaseModel):
     current_estimated_1rm: Decimal | None
     change_percent: Decimal | None
     points: list[StrengthProgressPointResponse]
+
+
+class ProgressConsistencyDayResponse(BaseModel):
+    date: date
+    workouts: int
+    effort_level: WorkoutEffort | None = None
+
+
+class ProgressConsistencyResponse(BaseModel):
+    active_days: int
+    active_weeks: int 
+    current_week_streak: int 
+    best_week_streak: int 
+    days: list[ProgressConsistencyDayResponse]
+
+
+class ProgressOverviewResponse(BaseModel):
+    period: ProgressPeriodResponse
+    summary: ProgressSummaryResponse
+    weekly_volume: list[WeeklyVolumeItem]
+    consistency: ProgressConsistencyResponse
+
+
+class PersonalRecordItemResponse(BaseModel):
+    exercise_name: str
+    weight: Decimal
+    reps: int
+    estimated_1rm: Decimal
+    workout_date: date
+

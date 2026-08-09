@@ -1,23 +1,33 @@
 import {
-    getWorkoutsOverview,
     createWorkout,
-    getWorkoutDetails,
     deleteWorkout,
+    getWorkoutDetails,
+    getWorkoutsOverview,
+    readApiError,
 } from "./api.js";
-import { renderWorkoutDetails } from "./workoutDetails.js";
-import { formatDate } from "./utils.js";
 import { showPage } from "./navigation.js";
+import { formatDate } from "./utils.js";
+import { renderWorkoutDetails } from "./workoutDetails.js";
+
 
 const workoutNameInput = document.querySelector("#workoutNameInput");
 const workoutsList = document.querySelector("#workoutsList");
 const workoutDetails = document.querySelector("#workoutDetails");
+const workoutsMonthTitle = document.querySelector("#workoutsMonthTitle");
+
+const workoutsBrowserView = document.querySelector("#workoutsBrowserView");
+const workoutEditorView = document.querySelector("#workoutEditorView");
+const closeWorkoutEditorBtn = document.querySelector("#closeWorkoutEditorBtn");
 
 const openCreateWorkoutBtn = document.querySelector("#openCreateWorkoutBtn");
 const createWorkoutPanel = document.querySelector("#createWorkoutPanel");
 const createWorkoutForm = document.querySelector("#createWorkoutForm");
 const cancelCreateWorkoutBtn = document.querySelector("#cancelCreateWorkoutBtn");
-
 const openWorkoutButtons = document.querySelectorAll(".js-open-workouts");
+
+const workoutSearchInput = document.querySelector("#workoutSearchInput");
+const workoutSortSelect = document.querySelector("#workoutSortSelect");
+const workoutFilterButtons = document.querySelectorAll("[data-workout-filter]");
 
 const monthWorkoutCount = document.querySelector("#monthWorkoutCount");
 const monthExerciseCount = document.querySelector("#monthExerciseCount");
@@ -28,210 +38,247 @@ const activityMonthTitle = document.querySelector("#activityMonthTitle");
 const activityGrid = document.querySelector("#activityGrid");
 const monthlySummaryList = document.querySelector("#monthlySummaryList");
 
+let currentOverview = null;
+let selectedFilter = "all";
+
 export function renderWorkoutCard(workout) {
-    const stats = {
-        exercises: workout.exercise_count,
-        sets: workout.set_count,
-        volume: Number(workout.volume),
-    };
+    const card = document.createElement("article");
+    card.className = "workout-card";
 
-    const workoutCard = document.createElement("div");
-    workoutCard.classList.add("workout-card");
+    const header = document.createElement("div");
+    header.className = "workout-card-header";
 
-    workoutCard.innerHTML = `
-        <div class="workout-card-header">
-            <div class="workout-card-icon"></div>
-            <div class="workout-card-info">
-                <h3 class="workout-card-title"></h3>
-                <time class="workout-card-date"></time>
-                <p class="workout-card-notes"></p>
-            </div>
-        </div>
+    const icon = document.createElement("div");
+    icon.className = "workout-card-icon";
+    icon.textContent = workout.title.trim().charAt(0).toUpperCase() || "W";
 
-        <div class="workout-card-stats"></div>
+    const info = document.createElement("div");
+    info.className = "workout-card-info";
 
-        <div class="workout-card-footer">
-            <button type="button" class="details-btn">View workout</button>
-            <span class="workout-card-arrow"></span>
-        </div>
-    `;
+    const titleRow = document.createElement("div");
+    titleRow.className = "workout-card-title-row";
 
-    workoutCard.querySelector(".workout-card-title").textContent = workout.title;
-    workoutCard.querySelector(".workout-card-date").textContent = formatDate(workout.date);
-    workoutCard.querySelector(".workout-card-notes").textContent = workout.notes || "No notes added.";
+    const title = document.createElement("h3");
+    title.className = "workout-card-title";
+    title.textContent = workout.title;
 
-    const statsElement = workoutCard.querySelector(".workout-card-stats");
+    const status = document.createElement("span");
+    status.className = workout.completed_at
+        ? "workout-status is-completed"
+        : "workout-status is-draft";
+    status.textContent = workout.completed_at ? "Completed" : "In progress";
 
-    statsElement.innerHTML = `
-        <div><strong>${stats.exercises}</strong><span>exercises</span></div>
-        <div><strong>${stats.sets}</strong><span>sets</span></div>
-        <div><strong>${Math.round(stats.volume).toLocaleString()}</strong><span>kg volume</span></div>
-    `
+    const date = document.createElement("time");
+    date.className = "workout-card-date";
+    date.dateTime = workout.date;
+    date.textContent = formatDate(workout.date);
 
-    const initial = workout.title.trim().charAt(0).toUpperCase() || "W";
-    workoutCard.querySelector(".workout-card-icon").textContent = initial;
+    const notes = document.createElement("p");
+    notes.className = "workout-card-notes";
+    notes.textContent = workout.notes || "No notes added.";
 
-    const detailsBtn = workoutCard.querySelector(".details-btn");
+    titleRow.append(title, status);
+    info.append(titleRow, date, notes);
+    header.append(icon, info);
 
-    detailsBtn.addEventListener("click", async function () {
-        const response = await getWorkoutDetails(workout.id);
+    const stats = document.createElement("div");
+    stats.className = "workout-card-stats";
 
-        if (!response.ok) {
-            alert("Workout details were not loaded");
-            return;
-        }
-
-        const workoutDetailsData = await response.json();
-
-        workoutDetails.hidden = false;
-        renderWorkoutDetails(workoutDetailsData);
-
-        workoutDetails.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-        });
+    [
+        [workout.exercise_count, "exercises"],
+        [workout.set_count, "sets"],
+        [Math.round(Number(workout.volume)).toLocaleString(), "kg volume"],
+    ].forEach(function ([value, label]) {
+        const item = document.createElement("div");
+        const strong = document.createElement("strong");
+        const span = document.createElement("span");
+        strong.textContent = value;
+        span.textContent = label;
+        item.append(strong, span);
+        stats.append(item);
     });
 
-    const deleteWorkoutBtn = document.createElement("button");
-    deleteWorkoutBtn.textContent = "Delete";
-    deleteWorkoutBtn.classList.add("delete-workout-btn");
+    const footer = document.createElement("div");
+    footer.className = "workout-card-footer";
 
-    deleteWorkoutBtn.addEventListener("click", async function () {
-        const confirmed = confirm("Delete this workout?");
+    const detailsButton = document.createElement("button");
+    detailsButton.type = "button";
+    detailsButton.className = "details-btn";
+    detailsButton.textContent = "View workout";
 
-        if (!confirmed) {
-            return;
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "delete-workout-btn";
+    deleteButton.textContent = "Delete";
+
+    const arrow = document.createElement("span");
+    arrow.className = "workout-card-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+
+    detailsButton.addEventListener("click", async function () {
+        try {
+            await openWorkoutEditor(workout.id);
+        } catch (error) {
+            showWorkoutListMessage(error.message, "error");
         }
-
-        deleteWorkoutBtn.disabled = true;
-        deleteWorkoutBtn.textContent = "Deleting...";
-
-        const response = await deleteWorkout(workout.id);
-
-        if (!response.ok) {
-            alert("Workout was not deleted");
-            deleteWorkoutBtn.disabled = false;
-            deleteWorkoutBtn.textContent = "Delete";
-            return;
-        }
-
-        workoutCard.remove();
-        await loadWorkouts();
-
-        workoutDetails.innerHTML = `
-            <h2>Workout Details</h2>
-            <p>Select workout to see details</p>
-        `;
     });
-    
-    const workoutCardFooter = workoutCard.querySelector(".workout-card-footer");
-    const arrow = workoutCard.querySelector(".workout-card-arrow");
-    workoutCardFooter.insertBefore(deleteWorkoutBtn, arrow);
 
-    workoutsList.appendChild(workoutCard);
+    deleteButton.addEventListener("click", async function () {
+        if (!confirm(`Delete "${workout.title}"?`)) {
+            return;
+        }
+
+        deleteButton.disabled = true;
+        deleteButton.textContent = "Deleting...";
+
+        try {
+            const response = await deleteWorkout(workout.id);
+
+            if (!response.ok) {
+                throw new Error(await readApiError(response, "Workout was not deleted."));
+            }
+
+            await loadWorkouts();
+            document.dispatchEvent(new CustomEvent("workout:updated"));
+        } catch (error) {
+            deleteButton.disabled = false;
+            deleteButton.textContent = "Delete";
+            showWorkoutListMessage(error.message, "error");
+        }
+    });
+
+    footer.append(detailsButton, deleteButton, arrow);
+    card.append(header, stats, footer);
+    return card;
 }
 
+function showWorkoutListMessage(message, kind = "empty") {
+    workoutsList.replaceChildren();
+    const state = document.createElement("div");
+    state.className = `workouts-empty-state is-${kind}`;
+    state.textContent = message;
+    workoutsList.append(state);
+}
+
+function getVisibleWorkouts() {
+    if (!currentOverview) {
+        return [];
+    }
+
+    const query = workoutSearchInput.value.trim().toLowerCase();
+    const direction = workoutSortSelect.value === "oldest" ? 1 : -1;
+
+    return currentOverview.workouts
+        .filter(function (workout) {
+            if (selectedFilter === "completed" && !workout.completed_at) {
+                return false;
+            }
+            if (selectedFilter === "draft" && workout.completed_at) {
+                return false;
+            }
+
+            if (!query) {
+                return true;
+            }
+
+            return [workout.title, workout.notes || ""]
+                .some((value) => value.toLowerCase().includes(query));
+        })
+        .sort(function (left, right) {
+            return direction * (new Date(left.date) - new Date(right.date));
+        });
+}
+
+function renderWorkoutCollection() {
+    workoutsList.replaceChildren();
+    const workouts = getVisibleWorkouts();
+
+    if (workouts.length === 0) {
+        const hasAnyWorkouts = currentOverview?.workouts.length > 0;
+        showWorkoutListMessage(
+            hasAnyWorkouts
+                ? "No workouts match these filters."
+                : "No workouts recorded this month yet.",
+        );
+        return;
+    }
+
+    workouts.forEach((workout) => workoutsList.append(renderWorkoutCard(workout)));
+}
 
 function renderMonthlyAnalytics(summary) {
     monthWorkoutCount.textContent = summary.workouts;
     monthExerciseCount.textContent = summary.exercises;
     monthSetCount.textContent = summary.sets;
-    monthVolume.innerHTML =
-        `${Math.round(Number(summary.volume)).toLocaleString()} <small>kg</small>`;
-
+    monthVolume.textContent = `${Math.round(Number(summary.volume)).toLocaleString()} kg`;
     renderMonthlySummary(summary);
 }
 
 function renderMonthActivity(activity, year, month) {
     const monthIndex = month - 1;
-
-    const effortLevels = {
-        light: 1,
-        moderate: 2,
-        hard: 3,
-        very_hard: 4,
-    };
+    const effortLevels = { light: 1, moderate: 2, hard: 3, very_hard: 4 };
 
     activityGrid.replaceChildren();
 
     const firstDayOffset = (new Date(year, monthIndex, 1).getDay() + 6) % 7;
-
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-
-    const activityByDay = new Map(
-        activity.map(function (item) {
-            return [item.day, item];
-        })
-    );
+    const activityByDay = new Map(activity.map((item) => [item.day, item]));
 
     for (let index = 0; index < firstDayOffset; index += 1) {
         const emptyCell = document.createElement("span");
-        emptyCell.classList.add("activity-day", "is-empty");
-        activityGrid.appendChild(emptyCell);
+        emptyCell.className = "activity-day is-empty";
+        activityGrid.append(emptyCell);
     }
 
     for (let day = 1; day <= daysInMonth; day += 1) {
         const dayActivity = activityByDay.get(day);
-
         const count = dayActivity?.workouts ?? 0;
         const effort = dayActivity?.effort_level ?? null;
-
         let levelClass = "level-0";
 
         if (dayActivity && effort === null) {
             levelClass = "level-unrated";
-        }
-
-        if (effort !== null) {
+        } else if (effort !== null) {
             levelClass = `level-${effortLevels[effort]}`;
         }
 
         const cell = document.createElement("span");
-        cell.classList.add("activity-day", levelClass);
-        
-        if (!dayActivity) {
-            cell.title = `${day}: No workouts`;
-        } else if (effort === null) {
-            cell.title = `${day}: ${count} workout(s), not rated`;
-        } else {
-            cell.title = `${day}: ${count} workout(s), ${effort}`;
-        }
-
-        activityGrid.appendChild(cell);
+        cell.className = `activity-day ${levelClass}`;
+        cell.title = !dayActivity
+            ? `${day}: No workouts`
+            : `${day}: ${count} workout${count === 1 ? "" : "s"}${effort ? `, ${effort.replace("_", " ")}` : ", not rated"}`;
+        activityGrid.append(cell);
     }
 
     const monthName = new Date(year, monthIndex, 1)
         .toLocaleDateString("en-US", { month: "long" });
-
     activityMonthTitle.textContent = `${monthName} activity`;
 }
 
+function createSummaryRow(mark, value, label) {
+    const row = document.createElement("div");
+    row.className = "summary-row";
+
+    const icon = document.createElement("span");
+    icon.className = "summary-row-icon";
+    icon.textContent = mark;
+
+    const content = document.createElement("div");
+    const strong = document.createElement("strong");
+    const span = document.createElement("span");
+    strong.textContent = value;
+    span.textContent = label;
+    content.append(strong, span);
+    row.append(icon, content);
+    return row;
+}
+
 function renderMonthlySummary(summary) {
-    monthlySummaryList.innerHTML = `
-        <div class="summary-row">
-            <span class="summary-row-icon">W</span>
-            <div>
-                <strong>${summary.workouts}</strong>
-                <span>Workouts this month</span>
-            </div>
-        </div>
-
-        <div class="summary-row">
-            <span class="summary-row-icon">S</span>
-            <div>
-                <strong>${summary.strongest_week}</strong>
-                <span>Strongest week</span>
-            </div>
-        </div>
-
-        <div class="summary-row">
-            <span class="summary-row-icon">M</span>
-            <div>
-                <strong>${summary.most_trained || "No workouts"}</strong>
-                <span>Most trained this month</span>
-            </div>
-        </div>
-    `;
+    monthlySummaryList.replaceChildren(
+        createSummaryRow("W", summary.workouts, "Workouts this month"),
+        createSummaryRow("S", summary.strongest_week, "Strongest week"),
+        createSummaryRow("M", summary.most_trained || "No workouts", "Most trained this month"),
+    );
 }
 
 export function setupWorkouts() {
@@ -242,28 +289,57 @@ export function setupWorkouts() {
         event.preventDefault();
         const workoutName = workoutNameInput.value.trim();
 
-        if (workoutName === "") {
-            alert("Enter workout name");
+        if (!workoutName) {
+            workoutNameInput.focus();
             return;
         }
 
-        const response = await createWorkout(workoutName);
+        const submitButton = createWorkoutForm.querySelector('[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = "Creating...";
 
-        if (!response.ok) {
-            alert("Workout was not created");
-            return;
+        try {
+            const response = await createWorkout(workoutName);
+
+            if (!response.ok) {
+                throw new Error(await readApiError(response, "Workout was not created."));
+            }
+
+            const newWorkout = await response.json();
+            closeCreateWorkoutForm();
+            await loadWorkouts();
+            document.dispatchEvent(new CustomEvent("workout:updated"));
+            await openWorkoutEditor(newWorkout.id);
+        } catch (error) {
+            showWorkoutListMessage(error.message, "error");
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Create";
         }
-
-        const newWorkout = await response.json();
-
-        await loadWorkouts();
-        closeCreateWorkoutForm();
     });
 
     openWorkoutButtons.forEach(function (button) {
         button.addEventListener("click", function () {
             showPage("workoutsPage");
-            openCreateWorkoutForm();
+            showWorkoutsBrowser();
+
+            if (button.dataset.workoutAction === "create") {
+                openCreateWorkoutForm();
+            }
+        });
+    });
+
+    closeWorkoutEditorBtn.addEventListener("click", closeWorkoutEditor);
+    workoutSearchInput.addEventListener("input", renderWorkoutCollection);
+    workoutSortSelect.addEventListener("change", renderWorkoutCollection);
+
+    workoutFilterButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            selectedFilter = button.dataset.workoutFilter;
+            workoutFilterButtons.forEach((candidate) => {
+                candidate.classList.toggle("active", candidate === button);
+            });
+            renderWorkoutCollection();
         });
     });
 
@@ -278,48 +354,79 @@ export function setupWorkouts() {
 
 export async function loadWorkouts() {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-
-    const response = await getWorkoutsOverview(year, month);
+    const response = await getWorkoutsOverview(now.getFullYear(), now.getMonth() + 1);
 
     if (!response.ok) {
-        throw new Error("Workout overview was not loaded");
+        throw new Error(await readApiError(response, "Workout overview was not loaded."));
     }
 
-    const overview = await response.json();
+    currentOverview = await response.json();
+    const displayedMonth = new Date(currentOverview.year, currentOverview.month - 1, 1);
 
-    workoutsList.replaceChildren();
-
-    overview.workouts.forEach(function (workout) {
-        renderWorkoutCard(workout);
+    workoutsMonthTitle.textContent = displayedMonth.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
     });
 
-    renderMonthlyAnalytics(overview.summary);
+    renderWorkoutCollection();
+    renderMonthlyAnalytics(currentOverview.summary);
     renderMonthActivity(
-        overview.activity,
-        overview.year,
-        overview.month
+        currentOverview.activity,
+        currentOverview.year,
+        currentOverview.month,
     );
 }
 
-export function resetWorkoutsView() {
-    workoutsList.replaceChildren();
+export async function openWorkoutEditor(workoutId) {
+    workoutsBrowserView.hidden = true;
+    workoutEditorView.hidden = false;
+    workoutDetails.innerHTML = '<p class="workout-editor-loading">Loading workout...</p>';
+
+    const response = await getWorkoutDetails(workoutId);
+
+    if (!response.ok) {
+        showWorkoutsBrowser();
+        throw new Error(await readApiError(response, "Workout details were not loaded."));
+    }
+
+    const workout = await response.json();
+    renderWorkoutDetails(workout);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+export function showWorkoutsBrowser() {
+    workoutsBrowserView.hidden = false;
+    workoutEditorView.hidden = true;
     workoutDetails.replaceChildren();
-    workoutDetails.hidden = true;
+}
+
+export async function closeWorkoutEditor() {
+    showWorkoutsBrowser();
+    await loadWorkouts();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+export function resetWorkoutsView() {
+    currentOverview = null;
+    workoutSearchInput.value = "";
+    workoutSortSelect.value = "newest";
+    selectedFilter = "all";
+    workoutFilterButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.workoutFilter === "all");
+    });
     closeCreateWorkoutForm();
+    showWorkoutsBrowser();
 }
 
 function openCreateWorkoutForm() {
     createWorkoutPanel.hidden = false;
     openCreateWorkoutBtn.setAttribute("aria-expanded", "true");
+    createWorkoutPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
     workoutNameInput.focus();
 }
 
 function closeCreateWorkoutForm() {
     createWorkoutPanel.hidden = true;
     openCreateWorkoutBtn.setAttribute("aria-expanded", "false");
-    workoutNameInput.value = "";
+    createWorkoutForm.reset();
 }
-
-
