@@ -1,5 +1,6 @@
 const navLinks = document.querySelectorAll(".nav-link");
 const appPages = document.querySelectorAll(".app-page");
+const brandHomeButton = document.querySelector("#brandHomeButton");
 
 export function setupNavigation() {
     navLinks.forEach(function (navLink) {
@@ -8,6 +9,10 @@ export function setupNavigation() {
 
             showPage(pageId);
         });
+    });
+
+    brandHomeButton.addEventListener("click", function () {
+        showPage("dashboardPage");
     });
 }
 

@@ -43,9 +43,10 @@ function createFormActions(saveLabel, onCancel) {
     return { actions, saveButton };
 }
 
-export function renderSet(set, index, { onChanged }) {
+export function renderSet(set, index, { onChanged, readOnly = false }) {
     const setItem = document.createElement("article");
     setItem.className = "set-item";
+    setItem.classList.toggle("is-readonly", readOnly);
 
     const number = document.createElement("strong");
     number.className = "set-number";
@@ -80,44 +81,49 @@ export function renderSet(set, index, { onChanged }) {
     deleteButton.textContent = "Delete";
 
     actions.append(editButton, deleteButton);
-    setItem.append(number, weight, reps, volume, actions);
+    setItem.append(number, weight, reps, volume);
+    if (!readOnly) {
+        setItem.append(actions);
+    }
 
-    editButton.addEventListener("click", function () {
-        editButton.disabled = true;
-        deleteButton.disabled = true;
+    if (!readOnly) {
+        editButton.addEventListener("click", function () {
+            editButton.disabled = true;
+            deleteButton.disabled = true;
 
-        const form = renderEditSetForm(set, {
-            onChanged,
-            onCancel() {
-                form.remove();
-                editButton.disabled = false;
-                deleteButton.disabled = false;
-            },
+            const form = renderEditSetForm(set, {
+                onChanged,
+                onCancel() {
+                    form.remove();
+                    editButton.disabled = false;
+                    deleteButton.disabled = false;
+                },
+            });
+            setItem.append(form);
+            form.querySelector("input").focus();
         });
-        setItem.append(form);
-        form.querySelector("input").focus();
-    });
 
-    deleteButton.addEventListener("click", async function () {
-        if (!confirm("Delete this set?")) {
-            return;
-        }
-
-        deleteButton.disabled = true;
-        deleteButton.textContent = "Deleting...";
-
-        try {
-            const response = await deleteSet(set.id);
-            if (!response.ok) {
-                throw new Error(await readApiError(response, "Set was not deleted."));
+        deleteButton.addEventListener("click", async function () {
+            if (!confirm("Delete this set?")) {
+                return;
             }
-            await onChanged();
-        } catch (error) {
-            deleteButton.disabled = false;
-            deleteButton.textContent = "Delete";
-            alert(error.message);
-        }
-    });
+
+            deleteButton.disabled = true;
+            deleteButton.textContent = "Deleting...";
+
+            try {
+                const response = await deleteSet(set.id);
+                if (!response.ok) {
+                    throw new Error(await readApiError(response, "Set was not deleted."));
+                }
+                await onChanged();
+            } catch (error) {
+                deleteButton.disabled = false;
+                deleteButton.textContent = "Delete";
+                alert(error.message);
+            }
+        });
+    }
 
     return setItem;
 }

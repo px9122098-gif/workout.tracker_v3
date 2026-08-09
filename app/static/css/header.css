@@ -13,6 +13,23 @@
 
 .brand {
     gap: 12px;
+    width: fit-content;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.brand:hover .app-title,
+.brand:focus-visible .app-title {
+    color: #159947;
+}
+
+.brand:focus-visible {
+    outline: 3px solid rgba(21, 153, 71, 0.2);
+    outline-offset: 5px;
 }
 
 .brand-icon {

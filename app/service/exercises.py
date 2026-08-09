@@ -5,6 +5,8 @@ from app.models import User
 from app.schemas import CreateExerciseRequest, ExerciseResponse
 from app.repository import exercises as exercises_repository
 from app.repository import workouts as workouts_repository
+from app.service.workouts import ensure_workout_is_editable
+
 
 def create_exercise(db: Session, exercise_data: CreateExerciseRequest, current_user: User) -> ExerciseResponse:
     name = exercise_data.name.strip()
@@ -15,6 +17,8 @@ def create_exercise(db: Session, exercise_data: CreateExerciseRequest, current_u
             status_code=404,
             detail=f"Workout with ID '{exercise_data.workout_id}' not found",
         )
+
+    ensure_workout_is_editable(workout)
     
     if exercises_repository.is_exercise_exist(db, exercise_data.workout_id, name):
         raise HTTPException(
@@ -37,6 +41,7 @@ def update_exercise(db: Session, exercise_id: int, new_name: str, current_user: 
             status_code=404,
             detail="Exercise not found"
         )
+    ensure_workout_is_editable(exercise.workout)
     
     if new_name != exercise.name:
         if exercises_repository.is_exercise_exist(db, exercise.workout_id, new_name):
@@ -59,8 +64,9 @@ def delete_exercise_by_id(db: Session, exercise_id: int, current_user: User):
             status_code=404,
             detail="Exercise not found"
         )
-    else:
-        exercises_repository.delete_exercise_by_id(db, exercise)
+
+    ensure_workout_is_editable(exercise.workout)
+    exercises_repository.delete_exercise_by_id(db, exercise)
 
     db.commit()
     return {"message": "Exercise deleted successfully"}

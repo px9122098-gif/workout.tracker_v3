@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from tests.helpers import create_user_and_get_token, create_workout, create_exercise
+from tests.helpers import complete_workout, create_user_and_get_token, create_workout, create_exercise
 
 
 client = TestClient(app)
@@ -75,3 +75,26 @@ def test_user_cannot_delete_another_users_exercise():
     )
 
     assert response.status_code == 404
+
+
+def test_completed_workout_exercises_are_read_only():
+    token = create_user_and_get_token()
+    workout_id = create_workout(token).json()["id"]
+    exercise_id = create_exercise(token, workout_id).json()["id"]
+
+    assert complete_workout(token, workout_id).status_code == 200
+
+    create_response = create_exercise(token, workout_id, "Late exercise")
+    update_response = client.patch(
+        f"/api/v1/exercises/{exercise_id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"name": "Changed after completion"},
+    )
+    delete_response = client.delete(
+        f"/api/v1/exercises/{exercise_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert create_response.status_code == 409
+    assert update_response.status_code == 409
+    assert delete_response.status_code == 409

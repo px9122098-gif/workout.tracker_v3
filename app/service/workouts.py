@@ -7,8 +7,17 @@ from fastapi import HTTPException
 
 from app.schemas import CreateWorkoutRequest, UpdateWorkoutRequest, CompleteWorkoutRequest, WorkoutResponse
 from app.repository import workouts as workouts_repository
-from app.models import User
+from app.models import User, Workout
 from app.time_utils import app_now
+
+
+def ensure_workout_is_editable(workout: Workout) -> None:
+    if workout.completed_at is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Completed workouts cannot be modified",
+        )
+
 
 def create_workout(db: Session, workout_data: CreateWorkoutRequest, current_user: User) -> WorkoutResponse:
     title = workout_data.title.strip()

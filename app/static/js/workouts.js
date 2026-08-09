@@ -355,6 +355,13 @@ export function setupWorkouts() {
             closeWorkoutEditor();
         }
     });
+    document.addEventListener("click", function (event) {
+        document.querySelectorAll(".workout-card-actions-menu[open]").forEach(function (menu) {
+            if (!menu.contains(event.target)) {
+                menu.open = false;
+            }
+        });
+    });
     document.addEventListener("app:page-changed", function (event) {
         if (event.detail.pageId !== "workoutsPage" && !workoutEditorView.hidden) {
             showWorkoutsBrowser();

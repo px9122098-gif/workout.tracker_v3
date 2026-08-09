@@ -37,6 +37,7 @@ function createMetric(value, label) {
 
 export function renderWorkoutDetails(workout) {
     const exercises = workout.exercises || [];
+    const isReadOnly = Boolean(workout.completed_at);
     const setCount = exercises.reduce((total, exercise) => total + exercise.sets.length, 0);
     const totalVolume = exercises.reduce(
         (total, exercise) => total + calculateExerciseVolume(exercise),
@@ -83,7 +84,7 @@ export function renderWorkoutDetails(workout) {
     exercisesHeader.innerHTML = `
         <div>
             <h3>Exercises</h3>
-            <p>Build the session one movement at a time.</p>
+            <p>${isReadOnly ? "Completed sessions are saved as read-only." : "Build the session one movement at a time."}</p>
         </div>
     `;
 
@@ -91,7 +92,9 @@ export function renderWorkoutDetails(workout) {
     addExerciseButton.type = "button";
     addExerciseButton.className = "add-exercise-btn";
     addExerciseButton.textContent = "+ Add exercise";
-    exercisesHeader.append(addExerciseButton);
+    if (!isReadOnly) {
+        exercisesHeader.append(addExerciseButton);
+    }
 
     const exerciseFormSlot = document.createElement("div");
     exerciseFormSlot.className = "exercise-form-slot";
@@ -109,22 +112,24 @@ export function renderWorkoutDetails(workout) {
         });
     }
 
-    addExerciseButton.addEventListener("click", function () {
-        if (exerciseFormSlot.firstChild) {
-            exerciseFormSlot.querySelector("input")?.focus();
-            return;
-        }
+    if (!isReadOnly) {
+        addExerciseButton.addEventListener("click", function () {
+            if (exerciseFormSlot.firstChild) {
+                exerciseFormSlot.querySelector("input")?.focus();
+                return;
+            }
 
-        addExerciseButton.disabled = true;
-        const form = renderExerciseForm(workout, {
-            onCancel() {
-                exerciseFormSlot.replaceChildren();
-                addExerciseButton.disabled = false;
-            },
+            addExerciseButton.disabled = true;
+            const form = renderExerciseForm(workout, {
+                onCancel() {
+                    exerciseFormSlot.replaceChildren();
+                    addExerciseButton.disabled = false;
+                },
+            });
+            exerciseFormSlot.append(form);
+            form.querySelector("input").focus();
         });
-        exerciseFormSlot.append(form);
-        form.querySelector("input").focus();
-    });
+    }
 
     exercisesSection.append(exercisesHeader, exerciseFormSlot, exerciseList);
 
@@ -335,8 +340,10 @@ export async function reloadWorkoutDetails(workoutId, shouldNotify = false) {
 }
 
 export function renderExercise(exercise, workout, index) {
+    const isReadOnly = Boolean(workout.completed_at);
     const item = document.createElement("article");
     item.className = "exercise-item";
+    item.classList.toggle("is-readonly", isReadOnly);
 
     const header = document.createElement("div");
     header.className = "exercise-header";
@@ -359,7 +366,9 @@ export function renderExercise(exercise, workout, index) {
     deleteButton.type = "button";
     deleteButton.className = "danger-text-button";
     deleteButton.textContent = "Delete";
-    actions.append(editButton, deleteButton);
+    if (!isReadOnly) {
+        actions.append(editButton, deleteButton);
+    }
     header.append(identity, actions);
 
     const editSlot = document.createElement("div");
@@ -374,7 +383,7 @@ export function renderExercise(exercise, workout, index) {
         sets.append(empty);
     } else {
         exercise.sets.forEach(function (set, setIndex) {
-            sets.append(renderSet(set, setIndex, { onChanged: refresh }));
+            sets.append(renderSet(set, setIndex, { onChanged: refresh, readOnly: isReadOnly }));
         });
     }
 
@@ -387,64 +396,69 @@ export function renderExercise(exercise, workout, index) {
     addSetButton.type = "button";
     addSetButton.className = "add-set-btn";
     addSetButton.textContent = "+ Add set";
-    footer.append(volume, addSetButton);
+    footer.append(volume);
+    if (!isReadOnly) {
+        footer.append(addSetButton);
+    }
 
     const setFormSlot = document.createElement("div");
     setFormSlot.className = "set-form-slot";
 
-    editButton.addEventListener("click", function () {
-        if (editSlot.firstChild) {
-            return;
-        }
-        editButton.disabled = true;
-        deleteButton.disabled = true;
-        const form = renderEditExerciseForm(exercise, workout, {
-            onCancel() {
-                editSlot.replaceChildren();
-                editButton.disabled = false;
-                deleteButton.disabled = false;
-            },
-        });
-        editSlot.append(form);
-        form.querySelector("input").focus();
-    });
-
-    deleteButton.addEventListener("click", async function () {
-        if (!confirm(`Delete "${exercise.name}" and all its sets?`)) {
-            return;
-        }
-
-        deleteButton.disabled = true;
-        deleteButton.textContent = "Deleting...";
-        try {
-            const response = await deleteExercise(exercise.id);
-            if (!response.ok) {
-                throw new Error(await readApiError(response, "Exercise was not deleted."));
+    if (!isReadOnly) {
+        editButton.addEventListener("click", function () {
+            if (editSlot.firstChild) {
+                return;
             }
-            await refresh();
-        } catch (error) {
-            deleteButton.disabled = false;
-            deleteButton.textContent = "Delete";
-            alert(error.message);
-        }
-    });
-
-    addSetButton.addEventListener("click", function () {
-        if (setFormSlot.firstChild) {
-            setFormSlot.querySelector("input")?.focus();
-            return;
-        }
-        addSetButton.disabled = true;
-        const form = renderSetForm(exercise, {
-            onChanged: refresh,
-            onCancel() {
-                setFormSlot.replaceChildren();
-                addSetButton.disabled = false;
-            },
+            editButton.disabled = true;
+            deleteButton.disabled = true;
+            const form = renderEditExerciseForm(exercise, workout, {
+                onCancel() {
+                    editSlot.replaceChildren();
+                    editButton.disabled = false;
+                    deleteButton.disabled = false;
+                },
+            });
+            editSlot.append(form);
+            form.querySelector("input").focus();
         });
-        setFormSlot.append(form);
-        form.querySelector("input").focus();
-    });
+
+        deleteButton.addEventListener("click", async function () {
+            if (!confirm(`Delete "${exercise.name}" and all its sets?`)) {
+                return;
+            }
+
+            deleteButton.disabled = true;
+            deleteButton.textContent = "Deleting...";
+            try {
+                const response = await deleteExercise(exercise.id);
+                if (!response.ok) {
+                    throw new Error(await readApiError(response, "Exercise was not deleted."));
+                }
+                await refresh();
+            } catch (error) {
+                deleteButton.disabled = false;
+                deleteButton.textContent = "Delete";
+                alert(error.message);
+            }
+        });
+
+        addSetButton.addEventListener("click", function () {
+            if (setFormSlot.firstChild) {
+                setFormSlot.querySelector("input")?.focus();
+                return;
+            }
+            addSetButton.disabled = true;
+            const form = renderSetForm(exercise, {
+                onChanged: refresh,
+                onCancel() {
+                    setFormSlot.replaceChildren();
+                    addSetButton.disabled = false;
+                },
+            });
+            setFormSlot.append(form);
+            form.querySelector("input").focus();
+        });
+    }
 
     item.append(header, editSlot, sets, setFormSlot, footer);
     return item;
