@@ -1,214 +1,239 @@
-import { createSet, updateSet, deleteSet } from "./api.js";
-import { reloadWorkoutDetails } from "./workoutDetails.js";
+import {
+    createSet,
+    deleteSet,
+    readApiError,
+    updateSet,
+} from "./api.js";
 
-export function renderSet(set, index, workout) {
-    const setItem = document.createElement("div");
-    setItem.classList.add("set-item");
 
-    const setText = document.createElement("span");
-    setText.textContent = `${index + 1}. ${set.weight} kg x ${set.reps} reps = ${set.weight * set.reps} kg`;
+function createSetFormFields(weight = "", reps = "") {
+    const fields = document.createElement("div");
+    fields.className = "set-form-fields";
+    fields.innerHTML = `
+        <label>
+            <span>Weight (kg)</span>
+            <input type="number" min="0" step="0.25" class="set-weight-input" inputmode="decimal" required>
+        </label>
+        <label>
+            <span>Repetitions</span>
+            <input type="number" min="1" step="1" class="set-reps-input" inputmode="numeric" required>
+        </label>
+    `;
+    fields.querySelector(".set-weight-input").value = weight;
+    fields.querySelector(".set-reps-input").value = reps;
+    return fields;
+}
 
-    const editSetBtn = document.createElement("button");
-    editSetBtn.textContent = "Edit";
-    editSetBtn.classList.add("edit-set-btn");
+function createFormActions(saveLabel, onCancel) {
+    const actions = document.createElement("div");
+    actions.className = "inline-form-actions";
 
-    const deleteSetBtn = document.createElement("button");
-    deleteSetBtn.textContent = "Delete";
-    deleteSetBtn.classList.add("delete-set-btn");
+    const saveButton = document.createElement("button");
+    saveButton.type = "submit";
+    saveButton.className = "primary-button";
+    saveButton.textContent = saveLabel;
 
-    setItem.appendChild(setText);
-    setItem.appendChild(editSetBtn);
-    setItem.appendChild(deleteSetBtn);
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.className = "secondary-button";
+    cancelButton.textContent = "Cancel";
+    cancelButton.addEventListener("click", onCancel);
 
-    editSetBtn.addEventListener("click", function () {
-        editSetBtn.disabled = true;
-        renderEditSetForm(set, workout, setItem);
+    actions.append(saveButton, cancelButton);
+    return { actions, saveButton };
+}
+
+export function renderSet(set, index, { onChanged }) {
+    const setItem = document.createElement("article");
+    setItem.className = "set-item";
+
+    const number = document.createElement("strong");
+    number.className = "set-number";
+    number.textContent = index + 1;
+
+    const weight = document.createElement("div");
+    weight.className = "set-value";
+    weight.innerHTML = `<strong></strong><span>kg</span>`;
+    weight.querySelector("strong").textContent = Number(set.weight).toLocaleString();
+
+    const reps = document.createElement("div");
+    reps.className = "set-value";
+    reps.innerHTML = `<strong></strong><span>reps</span>`;
+    reps.querySelector("strong").textContent = set.reps;
+
+    const volume = document.createElement("div");
+    volume.className = "set-value";
+    volume.innerHTML = `<strong></strong><span>volume</span>`;
+    volume.querySelector("strong").textContent = Math.round(set.weight * set.reps).toLocaleString();
+
+    const actions = document.createElement("div");
+    actions.className = "set-actions";
+
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.className = "icon-text-button";
+    editButton.textContent = "Edit";
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "danger-text-button";
+    deleteButton.textContent = "Delete";
+
+    actions.append(editButton, deleteButton);
+    setItem.append(number, weight, reps, volume, actions);
+
+    editButton.addEventListener("click", function () {
+        editButton.disabled = true;
+        deleteButton.disabled = true;
+
+        const form = renderEditSetForm(set, {
+            onChanged,
+            onCancel() {
+                form.remove();
+                editButton.disabled = false;
+                deleteButton.disabled = false;
+            },
+        });
+        setItem.append(form);
+        form.querySelector("input").focus();
     });
-                    
-    deleteSetBtn.addEventListener("click", async function () {
-        const confirmed = confirm("Delete this set?");
 
-        if (!confirmed) {
+    deleteButton.addEventListener("click", async function () {
+        if (!confirm("Delete this set?")) {
             return;
         }
 
-        deleteSetBtn.disabled = true;
-        deleteSetBtn.textContent = "Deleting...";
+        deleteButton.disabled = true;
+        deleteButton.textContent = "Deleting...";
 
-        const response = await deleteSet(set.id);
-
-        if (!response.ok) {
-            deleteSetBtn.disabled = false;
-            deleteSetBtn.textContent = "Delete";
-
-            alert("Set was not deleted");
-            return;
+        try {
+            const response = await deleteSet(set.id);
+            if (!response.ok) {
+                throw new Error(await readApiError(response, "Set was not deleted."));
+            }
+            await onChanged();
+        } catch (error) {
+            deleteButton.disabled = false;
+            deleteButton.textContent = "Delete";
+            alert(error.message);
         }
-
-        await reloadWorkoutDetails(workout.id);
     });
 
     return setItem;
 }
 
-export function renderSetForm(exercise, workout, exerciseItem, addSetBtn) {
-    const setForm = document.createElement("div");
-    setForm.classList.add("set-form");
+export function renderSetForm(exercise, { onChanged, onCancel }) {
+    const form = document.createElement("form");
+    form.className = "set-form inline-editor";
 
-    setForm.innerHTML = `
-        <input type="number" min="0" step="0.25" class="set-weight-input"
-                inputmode="decimal" aria-label="Weight in kilograms">
+    const heading = document.createElement("strong");
+    heading.textContent = "Add a working set";
+    const fields = createSetFormFields();
+    const status = document.createElement("p");
+    status.className = "inline-form-status";
+    status.setAttribute("aria-live", "polite");
+    const { actions, saveButton } = createFormActions("Add set", onCancel);
 
-        <input type="number" min="1" step="1" class="set-reps-input"
-                inputmode="numeric" aria-label="Repetitions">
-        <button type="button" class="save-set-btn">Save</button>
-        `;
-        
-    exerciseItem.appendChild(setForm);
-
-    addSetBtn.disabled = true;
-
-    const saveSetBtn = setForm.querySelector(".save-set-btn");
-
-    saveSetBtn.addEventListener("click", async function () {
-        const weightInput = setForm.querySelector(".set-weight-input");
-        const repsInput = setForm.querySelector(".set-reps-input");
-
-        const result = readAndValidateSetInputs(weightInput, repsInput);
+    form.append(heading, fields, actions, status);
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const result = readAndValidateSetInputs(
+            form.querySelector(".set-weight-input"),
+            form.querySelector(".set-reps-input"),
+        );
 
         if (!result.isValid) {
-            alert(result.message);
+            status.textContent = result.message;
             return;
         }
 
-        saveSetBtn.disabled = true;
-        saveSetBtn.textContent = "Saving...";
+        saveButton.disabled = true;
+        saveButton.textContent = "Adding...";
+        status.textContent = "";
 
-        const response = await createSet(exercise.id, result.weight, result.reps);
-
+        try {
+            const response = await createSet(exercise.id, result.weight, result.reps);
             if (!response.ok) {
-                saveSetBtn.disabled = false;
-                saveSetBtn.textContent = "Save";
-
-                alert("Set was not created");
-                return;
+                throw new Error(await readApiError(response, "Set was not created."));
             }
+            await onChanged();
+        } catch (error) {
+            saveButton.disabled = false;
+            saveButton.textContent = "Add set";
+            status.textContent = error.message;
+        }
+    });
 
-            await reloadWorkoutDetails(workout.id)
-        });
+    return form;
 }
 
-export function renderEditSetForm(set, workout, setItem) {
-    const editSetForm = document.createElement("div");
-    editSetForm.classList.add("edit-set-form");
+export function renderEditSetForm(set, { onChanged, onCancel }) {
+    const form = document.createElement("form");
+    form.className = "edit-set-form inline-editor set-item-editor";
 
-    editSetForm.innerHTML = `
-    <input class="edit-set-weight-input" value="${set.weight}">
-    <input class="edit-set-reps-input" value="${set.reps}">
-    <button type="button" class="save-edit-set-btn">Save</button>
-    `;
+    const fields = createSetFormFields(set.weight, set.reps);
+    const status = document.createElement("p");
+    status.className = "inline-form-status";
+    status.setAttribute("aria-live", "polite");
+    const { actions, saveButton } = createFormActions("Save changes", onCancel);
+    form.append(fields, actions, status);
 
-    setItem.appendChild(editSetForm);
-
-    const saveEditSetBtn = editSetForm.querySelector(".save-edit-set-btn");
-
-    saveEditSetBtn.addEventListener("click", async function () {
-        const weightInput = editSetForm.querySelector(".edit-set-weight-input");
-        const repsInput = editSetForm.querySelector(".edit-set-reps-input");
-
-        const result = readAndValidateSetInputs(weightInput, repsInput);
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const result = readAndValidateSetInputs(
+            form.querySelector(".set-weight-input"),
+            form.querySelector(".set-reps-input"),
+        );
 
         if (!result.isValid) {
-            alert(result.message);
+            status.textContent = result.message;
             return;
         }
 
-        saveEditSetBtn.disabled = true;
-        saveEditSetBtn.textContent = "Saving...";
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
 
-        const response = await updateSet(set.id, result.weight, result.reps);
-
-        if (!response.ok) {
-            saveEditSetBtn.disabled = false;
-            saveEditSetBtn.textContent = "Save";
-
-            alert("Set was not updated");
-            return;
+        try {
+            const response = await updateSet(set.id, result.weight, result.reps);
+            if (!response.ok) {
+                throw new Error(await readApiError(response, "Set was not updated."));
+            }
+            await onChanged();
+        } catch (error) {
+            saveButton.disabled = false;
+            saveButton.textContent = "Save changes";
+            status.textContent = error.message;
         }
-
-        await reloadWorkoutDetails(workout.id);
     });
+
+    return form;
 }
 
 export function readAndValidateSetInputs(weightInput, repsInput) {
     const weightText = weightInput.value.trim();
     const repsText = repsInput.value.trim();
 
-    if (weightText === "") {
-        return {
-            isValid: false,
-            message: "Value is empty"
-        };
+    if (!weightText || !repsText) {
+        return { isValid: false, message: "Enter both weight and repetitions." };
     }
 
-    if (repsText === "") {
-        return {
-            isValid: false,
-            message: "Value is empty"
-        };
+    const weight = Number(weightText);
+    const reps = Number(repsText);
+
+    if (!Number.isFinite(weight) || weight < 0) {
+        return { isValid: false, message: "Weight must be zero or greater." };
     }
 
-    const weightNumber = Number(weightText);
-    const repsNumber = Number(repsText);
-
-    if (Number.isNaN(weightNumber)) {
-        return {
-            isValid: false,
-            message: "Weight must be number"
-        };
+    if (!Number.isInteger(reps) || reps <= 0) {
+        return { isValid: false, message: "Repetitions must be a positive integer." };
     }
 
-    if (Number.isNaN(repsNumber)) {
-        return {
-            isValid: false,
-            message: "Reps must be number"
-        };
-    }
-
-    if (!Number.isInteger(repsNumber)) {
-        return {
-            isValid: false,
-            message: "Reps must be an integer"
-        };
-    }
-
-    if (weightNumber < 0) {
-        return {
-            isValid: false,
-            message: "Weight must be positive"
-        };
-    }
-
-    if (repsNumber <= 0) {
-        return {
-            isValid: false,
-            message: "Reps must be positive"
-        };
-    }
-    
-    return {
-        isValid: true,
-        weight: weightNumber,
-        reps: repsNumber
-    }
+    return { isValid: true, weight, reps };
 }
 
 export function calculateExerciseVolume(exercise) {
-    let total = 0;
-
-    exercise.sets.forEach(function (set) {
-        total += set.weight * set.reps;
-    });
-
-    return total;
+    return exercise.sets.reduce(
+        (total, set) => total + Number(set.weight) * Number(set.reps),
+        0,
+    );
 }

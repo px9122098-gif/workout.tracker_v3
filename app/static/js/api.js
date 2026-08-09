@@ -1,17 +1,41 @@
 const API_URL = "/api/v1";
 
-export function authFetch(url, options = {}) {
+export async function authFetch(url, options = {}) {
+    const { skipAuthEvent = false, ...fetchOptions } = options;
     const token = localStorage.getItem("access_token");
-    const headers = new Headers(options.headers);
+    const headers = new Headers(fetchOptions.headers);
 
     if (token) {
         headers.set("Authorization", `Bearer ${token}`);
     }
 
-    return fetch(url, {
-        ...options,
+    const response = await fetch(url, {
+        ...fetchOptions,
         headers: headers,
     });
+
+    if (response.status === 401 && token && !skipAuthEvent) {
+        document.dispatchEvent(new CustomEvent("auth:expired"));
+    }
+
+    return response;
+}
+
+export async function readApiError(response, fallbackMessage) {
+    const data = await response.json().catch(() => null);
+
+    if (typeof data?.detail === "string") {
+        return data.detail;
+    }
+
+    if (Array.isArray(data?.detail)) {
+        return data.detail
+            .map((item) => item.msg)
+            .filter(Boolean)
+            .join(". ") || fallbackMessage;
+    }
+
+    return fallbackMessage;
 }
 
 export async function registerUser(email, password) {
@@ -218,5 +242,5 @@ export async function getWorkouts() {
 }
 
 export async function getCurrentUser() {
-    return authFetch(`${API_URL}/auth/me`);
+    return authFetch(`${API_URL}/auth/me`, { skipAuthEvent: true });
 }

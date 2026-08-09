@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout tracker</title>
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/auth.css">
-    <link rel="stylesheet" href="css/workouts.css">
-    <link rel="stylesheet" href="css/progress.css">
+    <link rel="stylesheet" href="css/base.css?v=3.0.0">
+    <link rel="stylesheet" href="css/layout.css?v=3.0.0">
+    <link rel="stylesheet" href="css/dashboard.css?v=3.0.0">
+    <link rel="stylesheet" href="css/header.css?v=3.0.0">
+    <link rel="stylesheet" href="css/auth.css?v=3.0.0">
+    <link rel="stylesheet" href="css/workouts.css?v=3.0.0">
+    <link rel="stylesheet" href="css/progress.css?v=3.0.0">
 </head>
 <body>
     <div class="app">
@@ -20,8 +20,8 @@
                 <div class="form-container register-container">
                     <form id="registerForm">
                         <h2>Create Account</h2>
-                        <input id="registerEmailInput" type="email" placeholder="Email">
-                        <input id="registerPasswordInput" type="password" placeholder="Password">
+                        <input id="registerEmailInput" type="email" placeholder="Email" autocomplete="email" required>
+                        <input id="registerPasswordInput" type="password" placeholder="Password" autocomplete="new-password" minlength="8" required>
                         <button type="submit">Sign Up</button>
                     </form>
                 </div>
@@ -29,8 +29,8 @@
                 <div class="form-container login-container">
                     <form id="loginForm">
                         <h2>Sign In</h2>
-                        <input id="loginEmailInput" type="email" placeholder="Email">
-                        <input id="loginPasswordInput" type="password" placeholder="Password">
+                        <input id="loginEmailInput" type="email" placeholder="Email" autocomplete="email" required>
+                        <input id="loginPasswordInput" type="password" placeholder="Password" autocomplete="current-password" required>
                         <button type="submit">Sign In</button>
                     </form>
                 </div>
@@ -53,6 +53,17 @@
                     </div>
                 </div>
 
+                <p id="authStatus" class="auth-status" aria-live="polite"></p>
+
+            </div>
+        </section>
+
+        <section id="appStateView" class="app-state-view" hidden>
+            <div class="app-state-card">
+                <span class="app-state-mark" aria-hidden="true">WT</span>
+                <h2 id="appStateTitle">Checking your session</h2>
+                <p id="appStateMessage">Connecting to Workout Tracker...</p>
+                <button type="button" id="retryAppBtn" class="primary-button" hidden>Try again</button>
             </div>
         </section>
 
@@ -70,8 +81,8 @@
                 </nav>
 
                 <div class="user-menu">
-                    <span class="user-avatar">A</span>
-                    <span class="user-email">alex@example.com</span>
+                    <span id="userAvatar" class="user-avatar">A</span>
+                    <span id="userEmail" class="user-email">Account</span>
                     <button type="button" id="logoutBtn" class="logout-btn" aria-label="Log out">Exit</button>
                 </div>
             </header>
@@ -80,7 +91,7 @@
                     <div class="hero-content">
                         <h2>Ready for your next workout?</h2>
                         <p>Build momentum, one set at a time.</p>
-                        <button type="button" class="hero-action js-open-workouts" data-page="workoutsPage">+ Start workout</button>
+                        <button type="button" class="hero-action js-open-workouts" data-workout-action="create">+ Start workout</button>
                     </div>
                 </section>
                 <p id="dashboardStatus" class="dashboard-status" aria-live="polite"></p>
@@ -107,14 +118,12 @@
                                 <span>Week streak</span>
                             </div>
                         </div>
-                        <div class="weekly-chart">
-                            <div class="chart-line"></div>
-                        </div>
+                        <div id="dashboardWeekChart" class="dashboard-week-chart" aria-label="Recent weekly training volume"></div>
                     </section>
                     <section class="recent-card dashboard-card">
                         <div class="card-header">
                             <h2>Recent workouts</h2>
-                            <button type="button">View all</button>
+                            <button type="button" class="js-open-workouts" data-workout-action="browse">View all</button>
                         </div>
                         <div id="dashboardRecentWorkouts" class="recent-list"></div>
                     </section>
@@ -147,7 +156,7 @@
                     </section>
 
                     <div class="quick-action-area dashboard-card">
-                        <button type="button" class="dashboard-new-workout-btn js-open-workouts" data-page="workoutsPage">+ New workout</button>
+                        <button type="button" class="dashboard-new-workout-btn js-open-workouts" data-workout-action="create">+ New workout</button>
                     </div>
                 </div>
             </main>
@@ -188,13 +197,17 @@
                         </div>
                     </section>
                     <section class="workouts-toolbar dashboard-card">
-                        <input class="workout-search" placeholder="Search workouts">
+                        <input id="workoutSearchInput" class="workout-search" type="search" placeholder="Search workouts" aria-label="Search workouts">
                     
-                        <div class="workout-filters"></div>
+                        <div class="workout-filters" aria-label="Workout status filter">
+                            <button type="button" class="filter-chip active" data-workout-filter="all">All</button>
+                            <button type="button" class="filter-chip" data-workout-filter="completed">Completed</button>
+                            <button type="button" class="filter-chip" data-workout-filter="draft">In progress</button>
+                        </div>
 
-                        <select class="workout-sort">
-                            <option>Newest first</option>
-                            <option>Oldest first</option>
+                        <select id="workoutSortSelect" class="workout-sort" aria-label="Sort workouts">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
                         </select>
                     </section>
                     <section id="createWorkoutPanel" class="create-workout-panel" hidden>
@@ -246,7 +259,7 @@
                 <section id="workoutEditorView" class="workout-editor-view" hidden>
                     <button type="button" id="closeWorkoutEditorBtn"
                             class="workout-editor-back">
-                        Back to workouts
+                        <span aria-hidden="true">&larr;</span> Back to workouts
                     </button>
 
                     <div id="workoutDetails"></div>
@@ -408,7 +421,7 @@
             </main>
         </section>
     </div>
-<script type="module" src="js/main.js"></script>
+<script type="module" src="js/main.js?v=3.0.0"></script>
 </body>
 </html>
 
