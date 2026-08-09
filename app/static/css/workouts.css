@@ -10,6 +10,8 @@
 }
 
 .workouts-summary {
+    position: relative;
+    overflow: hidden;
     min-height: 150px;
     display: grid;
     grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
@@ -19,6 +21,12 @@
     background: linear-gradient(135deg, #09914b, #087f72 52%, #80cf1b);
     color: #ffffff;
     box-shadow: 0 14px 34px rgba(9, 145, 75, 0.16);
+}
+
+.summary-main,
+.summary-metrics {
+    position: relative;
+    z-index: 2;
 }
 
 .summary-total {
@@ -171,6 +179,7 @@
 }
 
 .workout-card {
+    position: relative;
     display: grid;
     gap: 14px;
     min-width: 0;
@@ -179,6 +188,56 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-card);
     background: var(--color-surface);
+}
+
+.workout-card-actions-menu {
+    position: absolute;
+    z-index: 5;
+    top: 10px;
+    right: 10px;
+}
+
+.workout-card-actions-trigger {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--color-muted);
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    list-style: none;
+}
+
+.workout-card-actions-trigger::-webkit-details-marker {
+    display: none;
+}
+
+.workout-card-actions-trigger:hover,
+.workout-card-actions-menu[open] .workout-card-actions-trigger {
+    background: var(--color-surface-soft);
+    color: var(--color-text);
+}
+
+.workout-card-actions-popover {
+    position: absolute;
+    top: 38px;
+    right: 0;
+    width: max-content;
+    min-width: 150px;
+    padding: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    box-shadow: 0 14px 30px rgba(17, 24, 39, 0.16);
+}
+
+.workout-card-actions-popover .delete-workout-btn {
+    width: 100%;
+    padding: 9px 11px;
+    text-align: left;
 }
 
 .workout-card:hover {
@@ -190,6 +249,7 @@
     display: grid;
     grid-template-columns: 52px minmax(0, 1fr);
     gap: 14px;
+    padding-right: 32px;
 }
 
 .workout-card-icon {
@@ -427,29 +487,56 @@
     text-align: center;
 }
 
-/* Workout editor */
+/* Workout editor modal */
+.workout-modal-open {
+    overflow: hidden;
+}
+
 .workout-editor-view {
-    width: 100%;
-    max-width: 1120px;
-    margin: 0 auto;
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    background: rgba(13, 28, 21, 0.38);
+    backdrop-filter: blur(8px);
+    overscroll-behavior: contain;
 }
 
-.workout-editor-back {
-    width: fit-content;
-    min-height: 42px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    padding: 8px 4px;
-    background: transparent;
+.workout-editor-dialog {
+    position: relative;
+    width: min(1040px, 100%);
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+    padding: 46px 22px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 8px;
+    background: #f4f7f5;
+    box-shadow: 0 28px 80px rgba(9, 24, 17, 0.28);
+}
+
+.workout-editor-close {
+    position: absolute;
+    z-index: 4;
+    top: 10px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.workout-editor-close:hover {
+    border-color: var(--color-primary);
     color: var(--color-primary-dark);
-    font-weight: 700;
-}
-
-.workout-editor-back:hover {
-    color: var(--color-primary);
-    transform: translateX(-2px);
 }
 
 #workoutDetails {
@@ -913,14 +1000,18 @@
 }
 
 .completion-mark {
-    width: 34px;
-    height: 34px;
+    min-width: 52px;
+    height: 32px;
+    flex: 0 0 auto;
     display: grid;
     place-items: center;
-    border-radius: 50%;
+    padding: 0 10px;
+    border-radius: 999px;
     background: var(--color-primary);
     color: #ffffff;
+    font-size: 12px;
     font-weight: 800;
+    line-height: 1;
 }
 
 .workout-completion-title {
@@ -965,6 +1056,17 @@
 }
 
 @media (max-width: 720px) {
+    .workout-editor-view {
+        align-items: end;
+        padding: 10px;
+    }
+
+    .workout-editor-dialog {
+        width: 100%;
+        max-height: calc(100vh - 20px);
+        padding: 46px 12px 14px;
+    }
+
     .workouts-summary {
         grid-template-columns: 1fr;
         gap: 24px;

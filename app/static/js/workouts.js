@@ -106,10 +106,24 @@ export function renderWorkoutCard(workout) {
     detailsButton.className = "details-btn";
     detailsButton.textContent = "View workout";
 
+    const actionsMenu = document.createElement("details");
+    actionsMenu.className = "workout-card-actions-menu";
+
+    const actionsTrigger = document.createElement("summary");
+    actionsTrigger.className = "workout-card-actions-trigger";
+    actionsTrigger.setAttribute("aria-label", `More actions for ${workout.title}`);
+    actionsTrigger.title = "More actions";
+    actionsTrigger.textContent = "\u22ef";
+
+    const actionsPopover = document.createElement("div");
+    actionsPopover.className = "workout-card-actions-popover";
+
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "delete-workout-btn";
-    deleteButton.textContent = "Delete";
+    deleteButton.textContent = "Delete workout";
+    actionsPopover.append(deleteButton);
+    actionsMenu.append(actionsTrigger, actionsPopover);
 
     const arrow = document.createElement("span");
     arrow.className = "workout-card-arrow";
@@ -124,6 +138,7 @@ export function renderWorkoutCard(workout) {
     });
 
     deleteButton.addEventListener("click", async function () {
+        actionsMenu.open = false;
         if (!confirm(`Delete "${workout.title}"?`)) {
             return;
         }
@@ -142,13 +157,13 @@ export function renderWorkoutCard(workout) {
             document.dispatchEvent(new CustomEvent("workout:updated"));
         } catch (error) {
             deleteButton.disabled = false;
-            deleteButton.textContent = "Delete";
+            deleteButton.textContent = "Delete workout";
             showWorkoutListMessage(error.message, "error");
         }
     });
 
-    footer.append(detailsButton, deleteButton, arrow);
-    card.append(header, stats, footer);
+    footer.append(detailsButton, arrow);
+    card.append(actionsMenu, header, stats, footer);
     return card;
 }
 
@@ -330,6 +345,21 @@ export function setupWorkouts() {
     });
 
     closeWorkoutEditorBtn.addEventListener("click", closeWorkoutEditor);
+    workoutEditorView.addEventListener("click", function (event) {
+        if (event.target === workoutEditorView) {
+            closeWorkoutEditor();
+        }
+    });
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !workoutEditorView.hidden) {
+            closeWorkoutEditor();
+        }
+    });
+    document.addEventListener("app:page-changed", function (event) {
+        if (event.detail.pageId !== "workoutsPage" && !workoutEditorView.hidden) {
+            showWorkoutsBrowser();
+        }
+    });
     workoutSearchInput.addEventListener("input", renderWorkoutCollection);
     workoutSortSelect.addEventListener("change", renderWorkoutCollection);
 
@@ -378,9 +408,10 @@ export async function loadWorkouts() {
 }
 
 export async function openWorkoutEditor(workoutId) {
-    workoutsBrowserView.hidden = true;
     workoutEditorView.hidden = false;
+    document.body.classList.add("workout-modal-open");
     workoutDetails.innerHTML = '<p class="workout-editor-loading">Loading workout...</p>';
+    closeWorkoutEditorBtn.focus();
 
     const response = await getWorkoutDetails(workoutId);
 
@@ -391,19 +422,18 @@ export async function openWorkoutEditor(workoutId) {
 
     const workout = await response.json();
     renderWorkoutDetails(workout);
-    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 export function showWorkoutsBrowser() {
     workoutsBrowserView.hidden = false;
     workoutEditorView.hidden = true;
+    document.body.classList.remove("workout-modal-open");
     workoutDetails.replaceChildren();
 }
 
 export async function closeWorkoutEditor() {
     showWorkoutsBrowser();
     await loadWorkouts();
-    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 export function resetWorkoutsView() {

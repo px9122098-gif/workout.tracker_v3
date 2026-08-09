@@ -17,6 +17,8 @@
 }
 
 .hero-panel {
+    position: relative;
+    overflow: hidden;
     min-height: 260px;
     padding: 44px 56px;
     box-sizing: border-box;
@@ -29,8 +31,108 @@
 }
 
 .hero-content {
+    position: relative;
+    z-index: 2;
     max-width: 520px;
 }
+
+.training-hero-decor {
+    position: absolute;
+    z-index: 1;
+    inset: 0 0 0 auto;
+    width: min(48%, 620px);
+    overflow: hidden;
+    pointer-events: none;
+    color: rgba(255, 255, 255, 0.34);
+}
+
+.training-hero-decor.compact {
+    width: min(42%, 460px);
+    opacity: 0.82;
+}
+
+.decor-calendar {
+    position: absolute;
+    top: 24%;
+    right: 48%;
+    width: 86px;
+    height: 76px;
+    border: 3px solid currentColor;
+    border-radius: 10px;
+    background:
+        repeating-linear-gradient(90deg, transparent 0 17px, currentColor 18px 20px),
+        repeating-linear-gradient(0deg, transparent 0 15px, currentColor 16px 18px);
+    opacity: 0.62;
+}
+
+.decor-calendar::before {
+    content: "";
+    position: absolute;
+    left: -3px;
+    right: -3px;
+    top: 14px;
+    border-top: 3px solid currentColor;
+}
+
+.decor-calendar::after {
+    content: "";
+    position: absolute;
+    top: -9px;
+    left: 18px;
+    width: 8px;
+    height: 16px;
+    border-left: 4px solid currentColor;
+    border-right: 4px solid currentColor;
+    box-shadow: 32px 0 0 -2px currentColor;
+}
+
+.decor-bars {
+    position: absolute;
+    right: 18%;
+    bottom: 0;
+    height: 72%;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.decor-bars i {
+    width: 22px;
+    height: 28%;
+    border-radius: 4px 4px 0 0;
+    background: currentColor;
+}
+
+.decor-bars i:nth-child(2) { height: 44%; }
+.decor-bars i:nth-child(3) { height: 63%; }
+.decor-bars i:nth-child(4) { height: 50%; }
+.decor-bars i:nth-child(5) { height: 78%; }
+
+.decor-dumbbell {
+    position: absolute;
+    top: 48%;
+    right: 2.5%;
+    width: 116px;
+    height: 12px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+.decor-dumbbell::before,
+.decor-dumbbell::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 62px;
+    border: 9px solid currentColor;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    transform: translateY(-50%);
+}
+
+.decor-dumbbell::before { left: -9px; }
+.decor-dumbbell::after { right: -9px; }
 
 .hero-content h2 {
     margin: 0 0 16px;
@@ -109,6 +211,15 @@
 
     .hero-content p {
         font-size: 16px;
+    }
+
+    .training-hero-decor {
+        width: 44%;
+        opacity: 0.5;
+    }
+
+    .decor-calendar {
+        display: none;
     }
 }
 

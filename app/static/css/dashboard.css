@@ -94,6 +94,11 @@
     fill: rgba(17, 155, 76, 0.09);
 }
 
+.dashboard-volume-baseline {
+    stroke: #d8e5dd;
+    stroke-width: 1;
+}
+
 .dashboard-volume-line {
     fill: none;
     stroke: var(--color-primary);
@@ -215,10 +220,10 @@
     background:
         radial-gradient(circle at center, #ffffff 58%, transparent 59%),
         conic-gradient(
-            #8bd11f 0 var(--goal-progress, 0%),
-            #e8f3e3 var(--goal-progress, 0%) 100%
+            #159947 0 var(--goal-progress, 0%),
+            #dcebe0 var(--goal-progress, 0%) 100%
         );
-    color: #159947;
+    color: #087f72;
 }
 
 .goal-ring strong {

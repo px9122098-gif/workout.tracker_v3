@@ -58,6 +58,8 @@
 }
 
 .progress-hero {
+    position: relative;
+    overflow: hidden;
     min-height: 138px;
     padding: 26px 36px;
     display: grid;
@@ -68,6 +70,12 @@
     color: #fff;
     background: linear-gradient(110deg, #07934c, #087f72 55%, #84cf20);
     box-shadow: 0 14px 34px rgba(9, 145, 75, 0.16);
+}
+
+.progress-hero > div:first-child,
+#progressTrendValue {
+    position: relative;
+    z-index: 2;
 }
 
 .progress-hero h2 {

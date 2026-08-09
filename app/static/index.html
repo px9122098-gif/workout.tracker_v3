@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout tracker</title>
-    <link rel="stylesheet" href="css/base.css?v=3.0.0">
-    <link rel="stylesheet" href="css/layout.css?v=3.0.0">
-    <link rel="stylesheet" href="css/dashboard.css?v=3.0.0">
-    <link rel="stylesheet" href="css/header.css?v=3.0.0">
-    <link rel="stylesheet" href="css/auth.css?v=3.0.0">
-    <link rel="stylesheet" href="css/workouts.css?v=3.0.0">
-    <link rel="stylesheet" href="css/progress.css?v=3.0.0">
+    <link rel="stylesheet" href="css/base.css?v=3.0.1">
+    <link rel="stylesheet" href="css/layout.css?v=3.0.1">
+    <link rel="stylesheet" href="css/dashboard.css?v=3.0.1">
+    <link rel="stylesheet" href="css/header.css?v=3.0.1">
+    <link rel="stylesheet" href="css/auth.css?v=3.0.1">
+    <link rel="stylesheet" href="css/workouts.css?v=3.0.1">
+    <link rel="stylesheet" href="css/progress.css?v=3.0.1">
 </head>
 <body>
     <div class="app">
@@ -92,6 +92,11 @@
                         <h2>Ready for your next workout?</h2>
                         <p>Build momentum, one set at a time.</p>
                         <button type="button" class="hero-action js-open-workouts" data-workout-action="create">+ Start workout</button>
+                    </div>
+                    <div class="training-hero-decor" aria-hidden="true">
+                        <span class="decor-calendar"></span>
+                        <span class="decor-bars"><i></i><i></i><i></i><i></i><i></i></span>
+                        <span class="decor-dumbbell"></span>
                     </div>
                 </section>
                 <p id="dashboardStatus" class="dashboard-status" aria-live="polite"></p>
@@ -195,6 +200,11 @@
                                 <span>volume</span>
                             </div>
                         </div>
+                        <div class="training-hero-decor compact" aria-hidden="true">
+                            <span class="decor-calendar"></span>
+                            <span class="decor-bars"><i></i><i></i><i></i><i></i><i></i></span>
+                            <span class="decor-dumbbell"></span>
+                        </div>
                     </section>
                     <section class="workouts-toolbar dashboard-card">
                         <input id="workoutSearchInput" class="workout-search" type="search" placeholder="Search workouts" aria-label="Search workouts">
@@ -256,13 +266,16 @@
                     </div>
                 </section>
 
-                <section id="workoutEditorView" class="workout-editor-view" hidden>
-                    <button type="button" id="closeWorkoutEditorBtn"
-                            class="workout-editor-back">
-                        <span aria-hidden="true">&larr;</span> Back to workouts
-                    </button>
-
-                    <div id="workoutDetails"></div>
+                <section id="workoutEditorView" class="workout-editor-view"
+                         role="dialog" aria-modal="true" aria-label="Workout details" hidden>
+                    <div class="workout-editor-dialog">
+                        <button type="button" id="closeWorkoutEditorBtn"
+                                class="workout-editor-close" aria-label="Close workout details"
+                                title="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <div id="workoutDetails"></div>
+                    </div>
                 </section>
             </main>
             <main id="progressPage" class="app-page progress-page" hidden>
@@ -294,6 +307,11 @@
                     </div>
 
                     <strong id="progressTrendValue">-</strong>
+                    <div class="training-hero-decor compact" aria-hidden="true">
+                        <span class="decor-calendar"></span>
+                        <span class="decor-bars"><i></i><i></i><i></i><i></i><i></i></span>
+                        <span class="decor-dumbbell"></span>
+                    </div>
                 </section>
                 <div class="progress-primary-grid">
                     <section class="strength-progress-card dashboard-card">
@@ -421,7 +439,7 @@
             </main>
         </section>
     </div>
-<script type="module" src="js/main.js?v=3.0.0"></script>
+<script type="module" src="js/main.js?v=3.0.1"></script>
 </body>
 </html>
 

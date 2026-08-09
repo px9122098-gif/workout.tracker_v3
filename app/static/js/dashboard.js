@@ -132,7 +132,8 @@ function renderDashboardVolumeChart(weeks) {
     const width = 640;
     const height = 96;
     const paddingX = 18;
-    const paddingY = 14;
+    const plotTop = 12;
+    const plotBottom = 76;
     const values = weeks.map((week) => Number(week.volume));
     const maxValue = Math.max(...values, 1);
     const horizontalStep = weeks.length === 1
@@ -142,7 +143,7 @@ function renderDashboardVolumeChart(weeks) {
     const points = values.map(function (value, index) {
         return {
             x: weeks.length === 1 ? width / 2 : paddingX + index * horizontalStep,
-            y: height - paddingY - (value / maxValue) * (height - paddingY * 2),
+            y: plotBottom - (value / maxValue) * (plotBottom - plotTop),
         };
     });
 
@@ -154,12 +155,19 @@ function renderDashboardVolumeChart(weeks) {
     });
 
     const areaPoints = [
-        `${points[0].x},${height - paddingY}`,
+        `${points[0].x},${plotBottom}`,
         ...points.map((point) => `${point.x},${point.y}`),
-        `${points.at(-1).x},${height - paddingY}`,
+        `${points.at(-1).x},${plotBottom}`,
     ].join(" ");
 
     svg.append(
+        createSvgElement("line", {
+            class: "dashboard-volume-baseline",
+            x1: paddingX,
+            y1: plotBottom,
+            x2: width - paddingX,
+            y2: plotBottom,
+        }),
         createSvgElement("polygon", {
             class: "dashboard-volume-area",
             points: areaPoints,
