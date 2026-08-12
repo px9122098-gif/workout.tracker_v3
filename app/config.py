@@ -29,6 +29,17 @@ def _positive_int_env(name: str, default: int) -> int:
     return value
 
 
+def _database_url() -> str:
+    database_url = _required_env("DATABASE_URL")
+
+    # Render exposes a generic PostgreSQL URL. Explicitly select Psycopg 3,
+    # which is the PostgreSQL driver installed by this project.
+    if database_url.startswith("postgresql://"):
+        return database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+    return database_url
+
+
 @dataclass(frozen=True)
 class Settings:
     database_url: str
@@ -57,7 +68,7 @@ def load_settings() -> Settings:
     )
 
     return Settings(
-        database_url=_required_env("DATABASE_URL"),
+        database_url=_database_url(),
         secret_key=_required_env("SECRET_KEY"),
         algorithm=os.getenv("ALGORITHM", "HS256").strip() or "HS256",
         access_token_expire_minutes=_positive_int_env(

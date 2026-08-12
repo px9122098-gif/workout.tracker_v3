@@ -66,6 +66,22 @@ Before a production deployment, provide the environment variables from
 `.env.example`, use a managed PostgreSQL database, run `alembic upgrade head`,
 and serve the application over HTTPS. Never commit `.env` or production secrets.
 
+## Deploy to Render
+
+The repository includes `render.yaml`, which creates a FastAPI web service and
+a PostgreSQL database in the same Frankfurt region.
+
+1. Push the latest commit to GitHub.
+2. In Render, choose **New > Blueprint** and connect this repository.
+3. Review the two resources and apply the Blueprint.
+4. Wait for the build, migrations, and health check to complete.
+5. Open the generated `onrender.com` URL and create a new account.
+
+The free web service sleeps after 15 minutes without traffic. The free Render
+PostgreSQL database expires after 30 days and has no backups, so it is suitable
+only for a first demo deployment. Upgrade the database before storing data that
+must be retained.
+
 ## Project status
 
 Version 3 is feature-complete for local use. The next version can focus on a
