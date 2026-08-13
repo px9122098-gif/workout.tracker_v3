@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -10,6 +12,7 @@ from app.api.v1.sets import router as sets_router
 from app.api.v1.progress import router as progress_router
 
 app = FastAPI()
+STATIC_DIR = Path(__file__).resolve().parent / "app" / "static"
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(settings.cors_origins),
@@ -30,5 +33,5 @@ app.include_router(progress_router, prefix="/api/v1")
 def health_check():
     return {"status": "ok"}
 
-app.mount("/", StaticFiles(directory="app/static", html=True), name="static")
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
