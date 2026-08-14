@@ -29,6 +29,23 @@ def _positive_int_env(name: str, default: int) -> int:
     return value
 
 
+def _bool_env(name: str, default: bool) -> bool:
+    raw_value = os.getenv(name, str(default)).strip().lower()
+    values = {
+        "true": True,
+        "1": True,
+        "yes": True,
+        "false": False,
+        "0": False,
+        "no": False,
+    }
+
+    if raw_value not in values:
+        raise RuntimeError(f"Environment variable {name} must be a boolean")
+
+    return values[raw_value]
+
+
 def _database_url() -> str:
     database_url = _required_env("DATABASE_URL")
 
@@ -46,6 +63,9 @@ class Settings:
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+    refresh_token_expire_days: int
+    refresh_cookie_name: str
+    cookie_secure: bool
     app_timezone: str
     cors_origins: tuple[str, ...]
 
@@ -75,6 +95,15 @@ def load_settings() -> Settings:
             "ACCESS_TOKEN_EXPIRE_MINUTES",
             30,
         ),
+        refresh_token_expire_days=_positive_int_env(
+            "REFRESH_TOKEN_EXPIRE_DAYS",
+            30,
+        ),
+        refresh_cookie_name=os.getenv(
+            "REFRESH_COOKIE_NAME",
+            "workout_refresh",
+        ).strip() or "workout_refresh",
+        cookie_secure=_bool_env("COOKIE_SECURE", False),
         app_timezone=app_timezone,
         cors_origins=cors_origins,
     )

@@ -1,20 +1,83 @@
 const API_URL = "/api/v1";
 
-export async function authFetch(url, options = {}) {
-    const { skipAuthEvent = false, ...fetchOptions } = options;
-    const token = localStorage.getItem("access_token");
-    const headers = new Headers(fetchOptions.headers);
+let accessToken = null;
+let refreshRequest = null;
 
-    if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-    }
+export function setAccessToken(token) {
+    accessToken = token || null;
+}
 
-    const response = await fetch(url, {
-        ...fetchOptions,
-        headers: headers,
+export function clearAccessToken() {
+    accessToken = null;
+    // Remove tokens created by older versions of the frontend.
+    localStorage.removeItem("access_token");
+}
+
+export function hasAccessToken() {
+    return Boolean(accessToken);
+}
+
+async function requestNewAccessToken() {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
+        method: "POST",
+        credentials: "same-origin",
     });
 
-    if (response.status === 401 && token && !skipAuthEvent) {
+    if (response.status === 401) {
+        clearAccessToken();
+        return false;
+    }
+
+    if (!response.ok) {
+        throw new Error("The session could not be refreshed.");
+    }
+
+    const data = await response.json();
+    setAccessToken(data.access_token);
+    return true;
+}
+
+export function restoreSession() {
+    if (!refreshRequest) {
+        refreshRequest = requestNewAccessToken().finally(function () {
+            refreshRequest = null;
+        });
+    }
+
+    return refreshRequest;
+}
+
+async function performAuthFetch(url, fetchOptions) {
+    const headers = new Headers(fetchOptions.headers);
+
+    if (accessToken) {
+        headers.set("Authorization", `Bearer ${accessToken}`);
+    }
+
+    return fetch(url, {
+        ...fetchOptions,
+        credentials: fetchOptions.credentials || "same-origin",
+        headers: headers,
+    });
+}
+
+export async function authFetch(url, options = {}) {
+    const {
+        skipAuthEvent = false,
+        skipRefresh = false,
+        ...fetchOptions
+    } = options;
+    let response = await performAuthFetch(url, fetchOptions);
+
+    if (response.status === 401 && !skipRefresh) {
+        const refreshed = await restoreSession();
+
+        if (refreshed) {
+            response = await performAuthFetch(url, fetchOptions);
+        }
+    }
+
+    if (response.status === 401 && !skipAuthEvent) {
         document.dispatchEvent(new CustomEvent("auth:expired"));
     }
 
@@ -54,6 +117,7 @@ export async function registerUser(email, password) {
 export async function loginUser(email, password) {
     return fetch(`${API_URL}/auth/login`, {
         method: "POST",
+        credentials: "same-origin",
         headers: {
             "Content-Type": "application/json",
         },
@@ -62,6 +126,17 @@ export async function loginUser(email, password) {
             password: password,
         }),
     });
+}
+
+export async function logoutUser() {
+    try {
+        return await fetch(`${API_URL}/auth/logout`, {
+            method: "POST",
+            credentials: "same-origin",
+        });
+    } finally {
+        clearAccessToken();
+    }
 }
 
 export async function createWorkout(workoutName) {

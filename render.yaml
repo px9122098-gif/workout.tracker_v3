@@ -19,6 +19,12 @@ services:
         value: HS256
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "30"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "30"
+      - key: REFRESH_COOKIE_NAME
+        value: workout_refresh
+      - key: COOKIE_SECURE
+        value: "true"
       - key: APP_TIMEZONE
         value: Europe/Moscow
 

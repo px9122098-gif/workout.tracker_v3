@@ -14,6 +14,29 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(default=app_now)
     workouts = relationship("Workout", back_populates="user", cascade="all, delete-orphan", order_by="Workout.id")
+    refresh_sessions = relationship(
+        "RefreshSession",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+
+class RefreshSession(Base):
+    __tablename__ = "refresh_session"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("app_users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    family_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(default=app_now)
+    expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    user = relationship("User", back_populates="refresh_sessions")
 
 
 class Workout(Base):

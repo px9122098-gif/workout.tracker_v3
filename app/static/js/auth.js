@@ -1,8 +1,12 @@
 import {
+    clearAccessToken,
     getCurrentUser,
     loginUser,
+    logoutUser,
     readApiError,
     registerUser,
+    restoreSession,
+    setAccessToken,
 } from "./api.js";
 import { loadDashboard } from "./dashboard.js";
 import { loadWorkouts, resetWorkoutsView } from "./workouts.js";
@@ -69,7 +73,7 @@ function renderCurrentUser(user) {
 }
 
 function endSession(message = "") {
-    localStorage.removeItem("access_token");
+    clearAccessToken();
     resetWorkoutsView();
     showLoginForm();
     showAuthView(message);
@@ -88,14 +92,7 @@ async function loadApplicationData() {
     });
 }
 
-export async function initializeApp() {
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-        showAuthView();
-        return;
-    }
-
+async function openAuthenticatedApp() {
     showAppState(
         "Checking your session",
         "Connecting to Workout Tracker...",
@@ -133,6 +130,35 @@ export async function initializeApp() {
     renderCurrentUser(user);
     showDashboardView();
     await loadApplicationData();
+}
+
+export async function initializeApp() {
+    clearAccessToken();
+    showAppState(
+        "Checking your session",
+        "Connecting to Workout Tracker...",
+    );
+
+    let restored;
+
+    try {
+        restored = await restoreSession();
+    } catch (error) {
+        console.error("Session restore failed:", error);
+        showAppState(
+            "Workout Tracker is unavailable",
+            "Check the server connection and try again.",
+            true,
+        );
+        return;
+    }
+
+    if (!restored) {
+        showAuthView();
+        return;
+    }
+
+    await openAuthenticatedApp();
 }
 
 async function submitWithState(form, pendingText, action) {
@@ -208,21 +234,25 @@ export function setupAuth() {
             }
 
             const data = await response.json();
-            localStorage.setItem("access_token", data.access_token);
+            setAccessToken(data.access_token);
             loginForm.reset();
-            await initializeApp();
+            await openAuthenticatedApp();
         } catch (error) {
             authStatus.textContent = "The server is unavailable. Try again.";
         }
     });
 
-    logoutBtn.addEventListener("click", function () {
-        endSession();
+    logoutBtn.addEventListener("click", async function () {
+        try {
+            await logoutUser();
+        } catch (error) {
+            console.error("Server logout failed:", error);
+        } finally {
+            endSession();
+        }
     });
 
     document.addEventListener("auth:expired", function () {
-        if (localStorage.getItem("access_token")) {
-            endSession("Your session expired. Sign in again.");
-        }
+        endSession("Your session expired. Sign in again.");
     });
 }
