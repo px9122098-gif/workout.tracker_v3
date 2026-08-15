@@ -123,6 +123,16 @@ uvicorn main:app --reload
 Open `http://127.0.0.1:8000`. API documentation is available at
 `http://127.0.0.1:8000/docs`.
 
+## Preview
+
+### Dashboard
+
+![Workout Tracker dashboard](docs/screenshots/dashboard.png)
+
+| Workout history | Progress analytics |
+| --- | --- |
+| ![Workout history](docs/screenshots/workouts.png) | ![Progress analytics](docs/screenshots/progress.png) |
+
 ## API overview
 
 All application endpoints are versioned under `/api/v1`.
@@ -194,3 +204,11 @@ Possible next steps:
 
 Built as an independent full-stack project by **Alexander Smirnov** while studying
 backend engineering and product delivery.
+
+## License
+
+Copyright (c) 2026 Alexander Smirnov. All rights reserved.
+
+The source code is publicly available for portfolio review. No permission is
+granted to copy, modify, redistribute, or use it in commercial products without
+the author's written approval.
