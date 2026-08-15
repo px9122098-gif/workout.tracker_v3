@@ -19,6 +19,13 @@ const workoutsBrowserView = document.querySelector("#workoutsBrowserView");
 const workoutEditorView = document.querySelector("#workoutEditorView");
 const closeWorkoutEditorBtn = document.querySelector("#closeWorkoutEditorBtn");
 
+const previousWorkoutsMonthBtn = document.querySelector(
+    "#previousWorkoutsMonthBtn"
+);
+const nextWorkoutsMonthBtn = document.querySelector(
+    "#nextWorkoutsMonthBtn"
+);
+
 const openCreateWorkoutBtn = document.querySelector("#openCreateWorkoutBtn");
 const createWorkoutPanel = document.querySelector("#createWorkoutPanel");
 const createWorkoutForm = document.querySelector("#createWorkoutForm");
@@ -40,6 +47,18 @@ const monthlySummaryList = document.querySelector("#monthlySummaryList");
 
 let currentOverview = null;
 let selectedFilter = "all";
+
+function getCurrentMonthStart() {
+    const now = new Date();
+
+    return new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1,
+    );
+}
+
+let selectedMonthDate = getCurrentMonthStart();
 
 export function renderWorkoutCard(workout) {
     const card = document.createElement("article");
@@ -296,9 +315,61 @@ function renderMonthlySummary(summary) {
     );
 }
 
+function updateMonthNavigation() {
+    const currentMonth = getCurrentMonthStart();
+
+    nextWorkoutsMonthBtn.disabled =
+        selectedMonthDate.getTime() >= currentMonth.getTime();
+
+    previousWorkoutsMonthBtn.disabled =
+        selectedMonthDate.getFullYear() === 2000
+        && selectedMonthDate.getMonth() === 0;
+}
+
+async function changeDisplayedMonth(offset) {
+    const previousMonthDate = selectedMonthDate;
+
+    const candidate = new Date(
+        selectedMonthDate.getFullYear(),
+        selectedMonthDate.getMonth() + offset,
+        1,
+    );
+
+    const currentMonth = getCurrentMonthStart();
+
+    if (candidate > currentMonth || candidate.getFullYear() < 2000) {
+        return;
+    }
+
+    selectedMonthDate = candidate;
+    previousWorkoutsMonthBtn.disabled = true;
+    nextWorkoutsMonthBtn.disabled = true;
+
+    showWorkoutListMessage("Loading workouts...");
+
+    try {
+        await loadWorkouts();
+    } catch (error) {
+        selectedMonthDate = previousMonthDate;
+        showWorkoutListMessage(error.message, "error");
+    } finally {
+        updateMonthNavigation();
+    }
+}
+
 export function setupWorkouts() {
     openCreateWorkoutBtn.addEventListener("click", openCreateWorkoutForm);
     cancelCreateWorkoutBtn.addEventListener("click", closeCreateWorkoutForm);
+
+    previousWorkoutsMonthBtn.addEventListener("click", function () {
+        changeDisplayedMonth(-1);
+    });
+
+    nextWorkoutsMonthBtn.addEventListener("click", function () {
+        changeDisplayedMonth(1);
+    });
+
+    updateMonthNavigation();
 
     createWorkoutForm.addEventListener("submit", async function (event) {
         event.preventDefault();
@@ -321,7 +392,10 @@ export function setupWorkouts() {
             }
 
             const newWorkout = await response.json();
+
             closeCreateWorkoutForm();
+            selectedMonthDate = getCurrentMonthStart();
+
             await loadWorkouts();
             document.dispatchEvent(new CustomEvent("workout:updated"));
             await openWorkoutEditor(newWorkout.id);
@@ -390,8 +464,10 @@ export function setupWorkouts() {
 }
 
 export async function loadWorkouts() {
-    const now = new Date();
-    const response = await getWorkoutsOverview(now.getFullYear(), now.getMonth() + 1);
+    const response = await getWorkoutsOverview(
+        selectedMonthDate.getFullYear(),
+        selectedMonthDate.getMonth() + 1,
+    );
 
     if (!response.ok) {
         throw new Error(await readApiError(response, "Workout overview was not loaded."));
@@ -399,6 +475,7 @@ export async function loadWorkouts() {
 
     currentOverview = await response.json();
     const displayedMonth = new Date(currentOverview.year, currentOverview.month - 1, 1);
+    selectedMonthDate = displayedMonth;
 
     workoutsMonthTitle.textContent = displayedMonth.toLocaleDateString("en-US", {
         month: "long",
@@ -412,6 +489,8 @@ export async function loadWorkouts() {
         currentOverview.year,
         currentOverview.month,
     );
+
+    updateMonthNavigation();
 }
 
 export async function openWorkoutEditor(workoutId) {
@@ -453,6 +532,9 @@ export function resetWorkoutsView() {
     });
     closeCreateWorkoutForm();
     showWorkoutsBrowser();
+
+    selectedMonthDate = getCurrentMonthStart();
+    updateMonthNavigation();
 }
 
 function openCreateWorkoutForm() {
