@@ -202,12 +202,12 @@ Possible next steps:
 
 ## Author
 
-Built as an independent full-stack project by **Alexander Smirnov** while studying
+Built as an independent full-stack project by **The Raryz** while studying
 backend engineering and product delivery.
 
 ## License
 
-Copyright (c) 2026 Alexander Smirnov. All rights reserved.
+Copyright (c) 2026 The Raryz. All rights reserved.
 
 The source code is publicly available for portfolio review. No permission is
 granted to copy, modify, redistribute, or use it in commercial products without
